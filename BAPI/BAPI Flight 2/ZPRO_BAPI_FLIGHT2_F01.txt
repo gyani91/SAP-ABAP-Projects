@@ -1,0 +1,68 @@
+*&---------------------------------------------------------------------*
+*&  Include           ZPRO_BAPI_FLIGHT2_F01
+*&---------------------------------------------------------------------*
+
+*&---------------------------------------------------------------------*
+*&      Form  POPULATE
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+form POPULATE .
+  wa_booking-passform = 'Mr.'.
+  wa_booking-passname = 'ABC'.
+  wa_booking-passbirth = '19920502'.
+  wa_booking-flightdate = '20150404'.
+  wa_booking-agencynum = '55'.
+  wa_booking-airlineid = 'LH'.
+  wa_booking-connectid = '2402'.
+  wa_booking-class = 'Y'.
+  wa_booking-customerid = '300'.
+endform.                    " POPULATE
+*&---------------------------------------------------------------------*
+*&      Form  DATA_INSERT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+form DATA_INSERT .
+
+CALL FUNCTION 'BAPI_FLBOOKING_CREATEFROMDATA'
+  EXPORTING
+*   RESERVE_ONLY        = ' '
+    booking_data        = wa_booking
+*   TEST_RUN            = ' '
+ IMPORTING
+*   AIRLINEID           =
+   BOOKINGNUMBER       = bno
+   TICKET_PRICE        = price
+* TABLES
+*   EXTENSION_IN        =
+*   RETURN              =
+          .
+
+*CALL FUNCTION 'BAPI_FLBOOKING_CREATEFROMDATA'
+*  EXPORTING
+**   RESERVE_ONLY        = ' '
+*    booking_data        = wa_booking
+*   TEST_RUN            = ' '
+* IMPORTING
+**   AIRLINEID           =
+*   BOOKINGNUMBER       = bno
+*   TICKET_PRICE        = price
+** TABLES
+**   EXTENSION_IN        =
+**   RETURN              =
+*          .
+CALL FUNCTION 'BAPI_TRANSACTION_COMMIT'
+* EXPORTING
+*   WAIT          =
+* IMPORTING
+*   RETURN        =
+          .
+WRITE: / price-price, BNO.
+endform.                    " DATA_INSERT

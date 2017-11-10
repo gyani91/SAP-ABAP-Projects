@@ -1,0 +1,13 @@
+*&---------------------------------------------------------------------*
+*& Module Pool       SAPMZ681793_CARD_MGMT
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+
+INCLUDE MZ681793_CARD_MGMTTOP                   .    " global Data
+INCLUDE MZ681793_CARD_MGMTO01                   .  " PBO-Modules
+INCLUDE MZ681793_CARD_MGMTI01                   .  " PAI-Modules
+INCLUDE MZ681793_CARD_MGMTF01                   .  " FORM-Routines

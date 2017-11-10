@@ -1,0 +1,463 @@
+**********************************************************************************
+* Author's name         : Mohit Bhatt
+*	                        Nipun Batra
+*                         Abhijeet Majumdar
+*                         Sumeet Gyanchandani
+* Date written          :	03-Mar-2015
+* Program description	  : Subroutines for Dialogue Program of RAK Bank Application
+***********************************************************************************
+* Modification #        :
+* Date of modification  :
+* Programmer            :
+* Description           :
+************************************************************************************
+*&---------------------------------------------------------------------*
+*&  INCLUDE           YG5_DPR_RAKS_BANK_F01
+*&---------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*&      FORM  EXIT_100
+*&---------------------------------------------------------------------*
+*       TEXT
+*----------------------------------------------------------------------*
+*  -->  P1        TEXT
+*  <--  P2        TEXT
+*----------------------------------------------------------------------*
+FORM F000-exit. "Exiting from Program
+  LEAVE PROGRAM.
+ENDFORM.                    " EXIT_100
+
+*&---------------------------------------------------------------------*
+*&      Form  CLEAR
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+FORM F001-clear. "Clearing Screen and Program Workarea
+  CLEAR: gt_transaction_details,
+  gw_transaction_details.
+  LEAVE SCREEN.
+ENDFORM.                    "CLEAR
+*&---------------------------------------------------------------------*
+*&      FORM  LOGIN
+*&---------------------------------------------------------------------*
+*       TEXT
+*----------------------------------------------------------------------*
+*  -->  P1        TEXT
+*  <--  P2        TEXT
+*----------------------------------------------------------------------*
+FORM F002-login. "Subroutine for login
+  SELECT SINGLE * INTO yg5_customers
+    FROM yg5_customers
+    WHERE cust_id = yg5_customers-cust_id
+    AND password = yg5_customers-password.
+  IF sy-subrc = 0.
+    PERFORM F009-fetch_cust_details.
+    CALL SCREEN 0200.
+  ELSE.
+    MESSAGE e000(ymc_g5_raksbank). "Invalid ID or Password
+  ENDIF.
+ENDFORM.                    " LOGIN
+*&---------------------------------------------------------------------*
+*&      FORM  FETCH_CUSTOMERDET
+*&---------------------------------------------------------------------*
+*       TEXT
+*----------------------------------------------------------------------*
+*  -->  P1        TEXT
+*  <--  P2        TEXT
+*----------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*&      FORM  NAVIGATE_SCR
+*&---------------------------------------------------------------------*
+*       TEXT
+*----------------------------------------------------------------------*
+*      -->P_0062   TEXT
+*----------------------------------------------------------------------*
+FORM F004-navigate_scr  USING p_scrno. "Navigating to a particular Screen
+  CALL SCREEN p_scrno.
+ENDFORM.                    " NAVIGATE_SCR
+*&---------------------------------------------------------------------*
+*&      FORM  NAVIGATE_SCR
+*&---------------------------------------------------------------------*
+*       TEXT
+*----------------------------------------------------------------------*
+*      -->P_0062   TEXT
+*----------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*&      FORM  CALL_ALV_RPRT_TRANSACTION
+*&---------------------------------------------------------------------*
+*       TEXT
+*----------------------------------------------------------------------*
+*  -->  P1        TEXT
+*  <--  P2        TEXT
+*----------------------------------------------------------------------*
+FORM F005-call_alv_rprt_transaction. "Calling Heirarchical List View
+  SET PARAMETER ID 'P_CUST_ID' FIELD yg5_customers-cust_id.
+  SUBMIT yg5_rpr_rak_bank AND RETURN.
+ENDFORM.                    "CALL_ALV_RPRT_TRANSACTION
+
+
+
+*&---------------------------------------------------------------------*
+*&      Form  INIT_200
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+FORM F005-init_200. "Fetching data multiple DDIC tables
+  IF yg5_account-account_no IS INITIAL.
+    READ TABLE gt_cust_acnts INTO yg5_account-account_no INDEX 1.
+  ENDIF.
+  SELECT SINGLE * FROM yg5_account INTO yg5_account
+    WHERE account_no = yg5_account-account_no.
+  IF sy-subrc = 0.
+    SELECT SINGLE * FROM yg5_balance
+  WHERE account_no = yg5_account-account_no.
+    IF sy-subrc <> 0.
+      CLEAR yg5_balance.
+    ENDIF.
+  ENDIF.
+ENDFORM.                             " CALL_ALV_RPRT_TRANSACTION
+*&---------------------------------------------------------------------*
+*&      FORM  CALL_ALV_RPRT_TRANSACTION
+*&---------------------------------------------------------------------*
+*       TEXT
+*----------------------------------------------------------------------*
+*  -->  P1        TEXT
+*  <--  P2        TEXT
+*----------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*&      FORM  CHK_ELIGIBILITY
+*&---------------------------------------------------------------------*
+*       TEXT
+*----------------------------------------------------------------------*
+*  -->  P1        TEXT
+*  <--  P2        TEXT
+*----------------------------------------------------------------------*
+FORM F006-chk_eligibility. "Performing checks for availing loan
+  DATA v_no_of_months TYPE i.
+
+  v_days = sy-datum - 90.
+  CALL FUNCTION 'MONTHS_BETWEEN_TWO_DATES' "function module to calculate months between two dates
+    EXPORTING
+      i_datum_bis   = sy-datum
+      i_datum_von   = yg5_account-created_on
+*     I_KZ_INCL_BIS = ' '
+    IMPORTING
+      e_monate      = v_no_of_months.
+
+  IF v_no_of_months >= 3
+    AND ( ( yg5_balance-balance >= gc_savings-minbal AND yg5_account-account_type = gc_savings-account_type )
+    OR      yg5_balance-balance >= gc_current-minbal AND yg5_account-account_type = gc_current-account_type ).
+    SELECT SUM( amount ) INTO v_tot_debitamt
+      FROM  yg5_transaction
+     WHERE account_no = yg5_account-account_no
+      AND tran_type = 'D'
+      AND tran_date > v_days.
+    IF  sy-subrc = 0 AND v_tot_debitamt >= 25000.
+      LOOP AT SCREEN.
+        IF screen-name CS 'TAB_' OR screen-name = 'BOX_OD2'.
+          screen-active = 1.
+          screen-invisible = 0.
+        ENDIF.
+        IF screen-name = 'TE_200' OR screen-name = 'BOX_OD1'.
+          screen-active = 0.
+        ENDIF.
+        MODIFY SCREEN.
+      ENDLOOP.
+
+    ENDIF.
+  ENDIF.
+
+ENDFORM.                    " CHK_ELIGIBILITY
+*&---------------------------------------------------------------------*
+*&      FORM  VALIDATE_DATE_300
+*&---------------------------------------------------------------------*
+*       TEXT
+*----------------------------------------------------------------------*
+*  -->  P1        TEXT
+*  <--  P2        TEXT
+*----------------------------------------------------------------------*
+FORM F007-validate_date_300 . "Validate Date on Screen 0300
+
+  IF ok_code_300 = 'FC_VIEW300'.
+    IF io_to IS NOT INITIAL AND io_from IS NOT INITIAL.
+      IF  io_from GT io_to.
+        MESSAGE e001(ymc_g5_raksbank). "From date should be less than to date
+      ELSEIF io_from GT sy-datlo.
+        MESSAGE e002(ymc_g5_raksbank). "From date cannot be a future date
+      ENDIF.
+    ELSE.
+      MESSAGE e008(ymc_g5_raksbank). "SELECT A DATE RANGE
+      CLEAR ok_code_300.
+    ENDIF.
+
+  ENDIF.
+
+ENDFORM.                    " VALIDATE_DATE_300
+*&---------------------------------------------------------------------*
+*&      FORM  BACK
+*&---------------------------------------------------------------------*
+*       TEXT
+*----------------------------------------------------------------------*
+*  -->  P1        TEXT
+*  <--  P2        TEXT
+*----------------------------------------------------------------------*
+FORM F008-back. "Going back to the previous screen
+  LEAVE TO SCREEN 0.
+ENDFORM.                    " BACK
+
+
+*&---------------------------------------------------------------------*
+*&      Form  PRINT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*                    " PRINT
+*&---------------------------------------------------------------------*
+*&      FORM  FETCH_CUST_DETAILS
+*&---------------------------------------------------------------------*
+*       TEXT
+*----------------------------------------------------------------------*
+*  -->  P1        TEXT
+*  <--  P2        TEXT
+*----------------------------------------------------------------------*
+FORM F009-fetch_cust_details. "Fetching data from Account DDIC table
+  SELECT * INTO CORRESPONDING FIELDS OF TABLE gt_cust_acnts
+    FROM yg5_account
+    WHERE cust_id = yg5_customers-cust_id
+    ORDER BY account_type DESCENDING account_no ASCENDING.
+ENDFORM.                    " FETCH_CUST_DETAILS
+*&---------------------------------------------------------------------*
+*&      FORM  GET_ACNTNOS
+*&---------------------------------------------------------------------*
+*       TEXT
+*----------------------------------------------------------------------*
+*  -->  P1        TEXT
+*  <--  P2        TEXT
+*----------------------------------------------------------------------*
+FORM F009-get_acntnos. "F4 help for account no
+  CALL FUNCTION 'F4IF_INT_TABLE_VALUE_REQUEST'
+    EXPORTING
+      retfield        = 'YG5_ACCOUNT-ACCOUNT_NO'
+      value_org       = 'S'
+    TABLES
+      value_tab       = gt_cust_acnts "it contains 2 fields that will be shown in the list box
+    EXCEPTIONS
+      parameter_error = 1
+      no_values_found = 2
+      OTHERS          = 3.
+ENDFORM.                    " GET_ACNTNOS
+" INIT_200
+*&---------------------------------------------------------------------*
+*&      Form  INIT_200
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+" INIT_200
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0210  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+" USER_COMMAND_0210  INPUT
+*&---------------------------------------------------------------------*
+*&      Form  ELIGIBLE_LOAN_AMOUNT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*      -->P_5      text
+*----------------------------------------------------------------------*
+FORM F010-eligible_loan_amount  USING  value(p_amt). "Calculating Maxmimum Loan Amount
+  io_mea = v_tot_debitamt * p_amt.
+ENDFORM.                    " ELIGIBLE_LOAN_AMOUNT
+
+*&---------------------------------------------------------------------*
+*&      Form  INSERT_TRANSACTION
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM F011-insert_transaction. "Inserting data into DDIC table
+  SELECT SINGLE * INTO yg5_service " TRANSACTION-SERVICE_ID
+   FROM yg5_service WHERE service_type = v_stype.
+  IF sy-subrc = 0.
+    SELECT MAX( tran_id ) INTO yg5_transaction-tran_id
+        FROM yg5_transaction WHERE account_no = yg5_account-account_no.
+    IF sy-subrc = 0.
+      ADD 1 TO yg5_transaction-tran_id.
+      yg5_transaction-service_id = yg5_service-service_id.
+      yg5_transaction-tran_date = sy-datum.
+      yg5_transaction-amount = io_cal_amt.
+      yg5_transaction-account_no = yg5_account-account_no.
+
+      INSERT yg5_transaction FROM yg5_transaction.
+      IF sy-subrc = 0.
+        DATA v_t_type(20).
+        IF yg5_transaction-tran_type = 'C'.
+          v_t_type = 'Credited'.
+          yg5_balance-balance = yg5_balance-balance + yg5_transaction-amount.
+        ELSEIF yg5_transaction-tran_type = 'D'.
+          v_t_type = 'Debited'.
+          yg5_balance-balance = yg5_balance-balance - yg5_transaction-amount.
+        ENDIF.
+        MODIFY yg5_balance FROM yg5_balance.
+        IF sy-subrc = 0.
+          CLEAR: io_cal_amt, discount, ok_code_200, f_flag_220.
+          MESSAGE s005(ymc_g5_raksbank) WITH yg5_transaction-tran_desc v_t_type . "&1 Amount successfully &2 to your account
+        ELSE.
+          MESSAGE e006(ymc_g5_raksbank) WITH yg5_balance-account_no. "Balance Updation failed for Account No. &1
+        ENDIF.
+      ENDIF.
+    ENDIF.
+
+  ENDIF.
+ENDFORM.                    " INSERT_TRANSACTION
+*&---------------------------------------------------------------------*
+*&      Form  FIND_DISCOUNT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*      -->P_AMOUNT  text
+*      -->P_DISCOUNT  text
+*      <--P_FINAL_AMOUNT  text
+*----------------------------------------------------------------------*
+FORM F012-find_discount  USING    p_amount
+                             p_discount
+                    CHANGING p_final_amount.
+  p_final_amount  = p_amount - ( p_amount * p_discount / 100 ).
+  CLEAR f_flag_220.
+ENDFORM.                    " FIND_DISCOUNT
+*&---------------------------------------------------------------------*
+*&      Form  SET_REMARKS
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM F013-set_remarks . "Initializing Screen 210
+  IF sy-dynnr = 220.
+    IF r_mobile = 'X'.
+      yg5_transaction-tran_desc = 'MOBILE BILL'.
+      io_selected_text = 'MOBILE NUM'.
+    ELSEIF r_dth = 'X'.
+      yg5_transaction-tran_desc = 'DTH BILL'.
+      io_selected_text = 'DTH ACC. NUM'.
+    ELSEIF r_purchase_bill = 'X'.
+      yg5_transaction-tran_desc = 'PURCHASE BILL'.
+      io_selected_text = 'INVOICE NO '.
+    ENDIF.
+
+    IF ok_code_200 <> 'FC_DISCOUNT'.
+      CLEAR: io_cal_amt, amount, discount, IO_mob_dth_pbill.
+    ENDIF.
+
+  ELSEIF sy-dynnr = 210.
+    IF r_car = 'X'.
+      yg5_transaction-tran_desc = 'CAR LOAN'.
+    ELSEIF r_home = 'X'.
+      yg5_transaction-tran_desc = 'HOME LOAN'.
+    ELSEIF r_personal = 'X'.
+      yg5_transaction-tran_desc = 'PERSONAL LOAN'.
+    ENDIF.
+
+    IF ok_code_200 <> 'FC_AL_210'.
+      CLEAR: io_cal_amt.
+    ENDIF.
+    v_remark_desc = yg5_transaction-tran_desc.
+
+  ENDIF.
+
+ENDFORM.                    " SET_REMARKS
+*&---------------------------------------------------------------------*
+*&      Form  VALIDATE_220
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM F014-validate_220. "Validating data
+      IF ok_code_200 = 'FC_PAY' AND IO_MOB_DTH_PBILL = ' '.
+        MESSAGE E015(ymc_g5_raksbank).
+        ENDIF.
+
+  IF yg5_balance-balance < amount.
+    CLEAR: amount.
+
+    MESSAGE e007(ymc_g5_raksbank). "Insufficient balance to perform this action!
+
+  ENDIF.
+   IF ok_code_200 = 'FC_DISCOUNT' AND AMOUNT LE 0.
+    CLEAR: amount.
+    MESSAGE E014(ymc_g5_raksbank). "DEBIT AMOUNT SHOULD BE GREATER THAN ZERO.
+   ENDIF.
+ENDFORM.                    " VALIDATE_220
+*&---------------------------------------------------------------------*
+*&      Form  TC_CHK
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM F015-tc_chk .
+  CLEAR yg5_transaction.
+ENDFORM.                    " TC_CHK
+*&---------------------------------------------------------------------*
+*&      Form  LOAD_DATA
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM F016-load_data. "Populating Data in Screen 300
+  IF sy-dynnr = '0300'.
+    SELECT * INTO TABLE gt_transaction_details
+       FROM yg5_transaction
+      WHERE account_no = yg5_account-account_no
+      AND tran_date BETWEEN io_from AND io_to.
+    IF sy-subrc <> 0.
+      MESSAGE i003(ymc_g5_raksbank). "No transactions are available for entered period
+    ENDIF.
+  ENDIF.
+ENDFORM.                    " LOAD_DATA
+*&---------------------------------------------------------------------*
+*&      Form  SMARTFORM_PRINT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM F017-smartform_print. "Subroutine for calling smart form
+  DATA: gt_transaction LIKE STANDARD TABLE OF yg5_transaction.
+  SELECT * INTO TABLE gt_transaction
+    FROM yg5_transaction
+    WHERE account_no = yg5_account-account_no.
+  DATA fname TYPE rs38l_fnam.
+  CALL FUNCTION 'SSF_FUNCTION_MODULE_NAME'
+    EXPORTING
+      formname = 'YSF_G5_TRANSC_DET'
+    IMPORTING
+      fm_name  = fname.
+  IF sy-subrc <> 0.
+* Implement suitable error handling here
+  ENDIF.
+  "CALL FUNCTION '/1BCDWB/SF00000001'
+
+
+  CALL FUNCTION fname
+    EXPORTING
+      c_account_no   = yg5_account-account_no
+      c_balance      = yg5_balance-balance
+      c_cust_id      = yg5_customers-cust_id
+    TABLES
+      gt_transaction = gt_transaction.
+  IF sy-subrc <> 0.
+* Implement suitable error handling here
+  ENDIF.
+ENDFORM.                    " SMARTFORM_PRINT

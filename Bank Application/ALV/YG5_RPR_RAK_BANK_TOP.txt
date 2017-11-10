@@ -1,0 +1,73 @@
+**************************************************
+* Author's name         : Mohit Bhatt
+*	                        Nipun Batra
+*                         Abhijeet Majumdar
+*                         Sumeet Gyanchandani
+* Date written          :	03-Mar-2015
+* Program description	  :
+**************************************************
+* Modification #        :
+* Date of modification  :
+* Programmer            :
+* Description           :
+**************************************************
+
+************** START OF DATA DECLARATION ************************************
+
+* DECLARATION OF SAP STANDARD POOLS
+
+TYPE-POOLS: SLIS.
+
+
+* DECLARATION OF CUSTOM TRANSPARENT TABLES.
+
+TABLES: YG5_ACCOUNT,
+        YG5_BALANCE.
+
+
+* DECLARATION OF PROGRAM STRUCTURES.
+
+TYPES: BEGIN OF TY_HEADER,
+    EXPAND TYPE c LENGTH 1,
+    ACCOUNT_NO TYPE YG5_ACCOUNT-ACCOUNT_NO,
+    CUST_ID TYPE YG5_CUSTOMERS-CUST_ID,
+  END OF TY_HEADER.
+
+TYPES: BEGIN OF TY_ITEM,
+  ACCOUNT_NO TYPE YG5_ACCOUNT-ACCOUNT_NO,
+    ACCOUNT_TYPE TYPE C LENGTH 10,
+    BALANCE TYPE YG5_BALANCE-BALANCE,
+    CURRENCY TYPE YG5_ACCOUNT-CURRENCY,
+    CREATED_ON TYPE YG5_ACCOUNT-CREATED_ON,
+  END OF TY_ITEM.
+
+
+* DECLARATION OF WORK VARIABLES.
+
+DATA P_CUST_ID TYPE YG5_CUSTOMERS-CUST_ID.
+
+
+* DECLARATION OF INTERNAL TABLES.
+
+DATA : GT_HEADER TYPE STANDARD TABLE OF TY_HEADER,
+       GT_ITEM TYPE STANDARD TABLE OF TY_ITEM,
+       GT_HIER_FCAT TYPE SLIS_T_FIELDCAT_ALV,
+       GT_BALANCE TYPE STANDARD TABLE OF YG5_BALANCE,
+       GT_ACCOUNT TYPE STANDARD TABLE OF YG5_ACCOUNT,
+       GT_EVENTS TYPE SLIS_T_EVENT,
+       GT_HEADING TYPE SLIS_T_LISTHEADER.
+
+
+* DECLARATION OF WORK AREAS.
+
+DATA :  GW_ITEM LIKE LINE OF GT_ITEM,
+        GW_HIER_FCAT LIKE LINE OF GT_HIER_FCAT,
+        GW_ACCOUNT LIKE LINE OF GT_ACCOUNT,
+        GW_BALANCE LIKE LINE OF GT_BALANCE,
+        GW_EVENTS LIKE LINE OF GT_EVENTS,
+        GW_HEADER LIKE LINE OF GT_HEADER,
+        GW_HEADING LIKE LINE OF GT_HEADING,
+        GW_LAYOUT TYPE SLIS_LAYOUT_ALV,
+        GW_KEYINFO TYPE SLIS_KEYINFO_ALV.
+
+************** END OF DATA DECLARATION ************************************

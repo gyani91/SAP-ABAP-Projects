@@ -1,0 +1,168 @@
+*&---------------------------------------------------------------------*
+*&  Include           ZPRO_RP_DAY1_ASSGN3A_F01
+*&---------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*&      Form  INIT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM init.
+  CALL SELECTION-SCREEN 0100.
+ENDFORM.                    " INIT
+*&---------------------------------------------------------------------*
+*&      Form  SELECT_SCR
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM select_scr .
+  IF sy-dynnr = 0100.
+    IF rb_user = 'X'.
+      utype = 'U'.
+    ELSE.
+      utype = 'C'.
+    ENDIF.
+
+    IF ch_ai = 'X'.
+      CALL SELECTION-SCREEN 0200.
+    ENDIF.
+  ENDIF.
+ENDFORM.                    " SELECT_SCR
+*&---------------------------------------------------------------------*
+*&      Form  VALIDATE_UID
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM validate_uid.
+  IF sy-dynnr = 0200.
+    SELECT COUNT(*) FROM z681797_user INTO v_count WHERE
+      usertype = utype AND userid = p_uid.
+    IF v_count = 0.
+      MESSAGE 'Userid Does Not Exist.' TYPE 'E'.
+*      MESSAGE e001(z681793_msg_class1).
+    ENDIF.
+  ENDIF.
+ENDFORM.                    " VALIDATE_UID
+*&---------------------------------------------------------------------*
+*&      Form  DATA_FETCH
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM data_fetch .
+  SELECT * FROM z681797_purchase INTO TABLE gt_pur
+    WHERE userid = p_uid AND dateofpurchase = p_dop.
+  IF sy-subrc = 0.
+    SELECT * FROM z797_purchase_it INTO TABLE gt_pi
+      FOR ALL ENTRIES IN gt_pur WHERE purchaseid = gt_pur-purchaseid.
+    IF sy-subrc = 0.
+      SELECT * FROM z681797_product INTO TABLE gt_pr
+        FOR ALL ENTRIES IN gt_pi WHERE pr_code = gt_pi-pr_code.
+      IF sy-subrc <> 0.
+        MESSAGE 'Data Not Found in product table' TYPE 'E'.
+      ENDIF.
+    ENDIF.
+  ENDIF.
+ENDFORM.                    " DATA_FETCH
+*&---------------------------------------------------------------------*
+*&      Form  SECONDARY_LIST
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM secondary_list .
+  DATA: f(30) TYPE c,
+        v(30) TYPE c.
+  GET CURSOR FIELD f VALUE v.
+  IF f = 'GW_OUTPUT-PR_CODE'.
+    WRITE v.
+    READ TABLE gt_pr INTO gw_pr WITH KEY pr_code = v.
+    IF sy-subrc = 0.
+      WRITE: gw_pr-description.
+    ENDIF.
+  ENDIF.
+ENDFORM.                    " SECONDARY_LIST
+*&---------------------------------------------------------------------*
+*&      Form  DATA_DISPLAY
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM data_display.
+  LOOP AT gt_output INTO gw_output.
+    AT NEW userid.
+      idcount = idcount + 1.
+    ENDAT.
+  ENDLOOP.
+  LOOP AT gt_output INTO gw_output.
+    AT FIRST.
+      WRITE: /40 'PURCHASE DETAILS'.
+    ENDAT.
+    AT NEW userid.
+      WRITE: / 'User Id:',gw_output-userid.
+      WRITE: /0(96) sy-uline.
+      WRITE: /0 '|',2 'purchase id',16 '|',17 'product code',32 '|',33
+'date of purchase',48 '|',49 'quantity',64 '|',65 'price',80 '|',81
+'net price',96 '|'.
+      WRITE: /0(96) sy-uline.
+    ENDAT.
+    WRITE: /0 '|',2 gw_output-purchaseid HOTSPOT,16 '|',17
+gw_output-pr_code,32 '|',33 gw_output-dateofpurchase,48 '|',49
+gw_output-quantity,64 '|',65 gw_output-price,80 '|',81
+gw_output-netprice,96 '|'.
+    WRITE: /0(96) sy-uline.
+    AT END OF userid.
+      SUM.
+      WRITE :/50 'TOTAL=',gw_output-netprice.
+      WRITE : 'IDCOUNT=',idcount.
+      IF pageno LT idcount.
+        NEW-PAGE.
+        pageno = pageno + 1.
+      ENDIF.
+    ENDAT.
+    AT LAST.
+      WRITE: /15 '**********SHOP EASY APPLICATION**********'.
+    ENDAT.
+  ENDLOOP.
+
+ENDFORM.                    " DATA_DISPLAY
+*&---------------------------------------------------------------------*
+*&      Form  DATA_PROCESS
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM data_process .
+  LOOP AT gt_pi INTO gw_pi.
+    IF sy-subrc = 0.
+      READ TABLE gt_pur INTO gw_pur WITH KEY purchaseid =
+gw_pi-purchaseid.
+      IF sy-subrc = 0.
+        READ TABLE gt_pr INTO gw_pr WITH KEY pr_code = gw_pi-pr_code.
+        IF sy-subrc = 0.
+          MOVE-CORRESPONDING gw_pi TO gw_output.
+          MOVE-CORRESPONDING gw_pr TO gw_output.
+          MOVE-CORRESPONDING gw_pur TO gw_output.
+          gw_output-netprice = gw_output-price * gw_output-quantity.
+          APPEND gw_output TO gt_output.
+        ENDIF.
+      ENDIF.
+    ENDIF.
+  ENDLOOP.
+ENDFORM.                    " DATA_PROCESS

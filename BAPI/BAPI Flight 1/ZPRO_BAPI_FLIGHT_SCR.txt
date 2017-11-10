@@ -1,0 +1,9 @@
+*&---------------------------------------------------------------------*
+*&  Include           ZPRO_BAPI_FLIGHT_SCR
+*&---------------------------------------------------------------------*
+
+PARAMETERS: p_al type BAPISFLKEY-AIRLINEID,
+            p_from type BAPISFLDST-city,
+            p_to type BAPISFLDST-city.
+
+SELECT-OPTIONS: so_date for sy-datum no-EXTENSION.

@@ -1,0 +1,15 @@
+*&---------------------------------------------------------------------*
+*&  Include           ZPRO_ALV_SCR
+*&---------------------------------------------------------------------*
+
+SELECTION-SCREEN BEGIN OF SCREEN 0101.
+SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME TITLE text-001.
+SELECT-OPTIONS: s_pid FOR pid OBLIGATORY NO-EXTENSION.
+SELECT-OPTIONS: s_pcode FOR pcode NO-EXTENSION.
+SELECTION-SCREEN END OF BLOCK b1.
+
+SELECTION-SCREEN BEGIN OF BLOCK b2 WITH FRAME TITLE text-002.
+PARAMETERS: rb_list RADIOBUTTON GROUP rg1,
+            rb_grid RADIOBUTTON GROUP rg1.
+SELECTION-SCREEN END OF BLOCK b2.
+SELECTION-SCREEN END OF SCREEN 0101.

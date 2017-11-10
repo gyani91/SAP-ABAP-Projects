@@ -1,0 +1,17 @@
+*&---------------------------------------------------------------------*
+*& Report  ZPRO_BAPI_FLIGHT2
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+REPORT  ZPRO_BAPI_FLIGHT2.
+
+include ZPRO_BAPI_FLIGHT2_top.
+include ZPRO_BAPI_FLIGHT2_scr.
+include ZPRO_BAPI_FLIGHT2_f01.
+
+START-OF-SELECTION.
+ PERFORM populate.
+ perform data_insert.

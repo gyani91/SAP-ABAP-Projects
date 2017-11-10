@@ -1,0 +1,2 @@
+TITLE_100 - WELCOME TO RAK'S BANK
+TITLE_200 - Welcome &1 - &2

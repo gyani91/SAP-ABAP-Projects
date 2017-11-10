@@ -1,0 +1,10 @@
+*&---------------------------------------------------------------------*
+*&  Include           ZPRO_BAPI_FLIGHT_TOP
+*&---------------------------------------------------------------------*
+
+data : s_from TYPE BAPISFLDST,
+        s_to TYPE BAPISFLDST,
+        gt_fl type STANDARD TABLE OF BAPISFLDAT,
+        gw_fl like LINE OF gt_fl,
+*        wa_flight type BAPISFLKEY,
+        wa_availability type BAPISFLAVA.

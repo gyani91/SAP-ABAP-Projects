@@ -1,0 +1,326 @@
+*&---------------------------------------------------------------------*
+*& Report  Z681716_DAY4_ASSIGNMENTS
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+REPORT  z681716_day4_assignments.
+"ASSIGNMENT 1----Based On A Local Structure
+
+"DECLARING LOCAL STRUCTURE 1
+TYPES : BEGIN OF gs_str1,
+  var1 TYPE i,
+  var2 TYPE i,
+  name TYPE z715_user-username,
+  END OF gs_str1.
+"DECLARING INTERNAL TABLE And WorkArea FOR Local structure1"
+DATA: gt_itab1 TYPE STANDARD TABLE OF gs_str1,
+      gw_wa1 TYPE gs_str1.
+"DECLARING LOCAL STRUCTURE 2
+TYPES : BEGIN OF gs_str2,
+  id TYPE z715_user-userid,
+  name TYPE z715_user-username,
+  gender TYPE z715user_details-gender,
+  doj TYPE z715user_details-doj,
+  END OF gs_str2.
+
+"DECLARING INTERNAL TABLE And WorkArea FOR Local structure2"
+
+DATA: gt_itab2 TYPE STANDARD TABLE OF gs_str2,
+      gw_wa2 TYPE gs_str2.
+
+
+"ASSIGNMENT 2----Based On A Another Table
+
+
+DATA : gt_purchase TYPE STANDARD TABLE OF z715_purchase,
+      gw_purchase LIKE LINE OF gt_purchase.
+
+DATA : gt_pur LIKE gt_purchase, gw_pur LIKE gw_purchase.
+
+DATA gt_stpur TYPE SORTED TABLE OF z715_purchase WITH UNIQUE KEY purchaseid.
+DATA gw_stpur LIKE LINE OF gt_stpur.
+
+DATA gt_htpur TYPE HASHED TABLE OF z715_purchase WITH UNIQUE KEY purchaseid.
+DATA gw_htpur LIKE LINE OF gt_htpur.
+
+"Assignment 3 On APPEND
+gw_wa1-var1 =  10 .
+gw_wa1-var2 = 20.
+gw_wa1-name = 'ABC'.
+
+APPEND gw_wa1 TO gt_itab1.
+
+gw_wa1-var1 = 15 .
+gw_wa1-var2 = 25.
+gw_wa1-name = 'EFG'.
+
+APPEND gw_wa1 TO gt_itab1.
+
+gw_wa1-var1 = 20 .
+gw_wa1-var2 = 30.
+gw_wa1-name = 'XYZ'.
+
+APPEND gw_wa1 TO gt_itab1.
+gw_wa1-var1 =  25 .
+gw_wa1-var2 =  35.
+gw_wa1-name = 'PQR'.
+
+APPEND gw_wa1 TO gt_itab1.
+WRITE: sy-uline(62).
+WRITE: / sy-vline,10 'VAR1',sy-vline,24 'VAR2',sy-vline,57 'NAME',sy-vline.
+WRITE:/ sy-uline(62).
+LOOP AT gt_itab1 INTO gw_wa1.
+  WRITE:/ sy-vline,gw_wa1-var1,sy-vline,gw_wa1-var2,sy-vline,gw_wa1-name,sy-vline.
+  WRITE: / sy-uline(62).
+ENDLOOP.
+
+gw_wa2-id = 123.
+gw_wa2-name = 'James'.
+gw_wa2-gender = 'Male'.
+gw_wa2-doj = '20000220'.
+APPEND gw_wa2 TO gt_itab2.
+
+
+gw_wa2-id = 456.
+gw_wa2-name = 'Princy'.
+gw_wa2-gender = 'Female'.
+gw_wa2-doj = '19980601'.
+APPEND gw_wa2 TO gt_itab2.
+
+gw_wa2-id = 789.
+gw_wa2-name = 'Victor'.
+gw_wa2-gender = 'Male'.
+gw_wa2-doj = '20041230'.
+APPEND gw_wa2 TO gt_itab2.
+
+LOOP AT gt_itab2 INTO gw_wa2.
+  WRITE:/ gw_wa2-id,gw_wa2-name,20 gw_wa2-gender,24 gw_wa2-doj.
+ENDLOOP.
+
+"Assignment 4 On collect Keyword"
+gw_wa1-var1 = 100.
+gw_wa1-var2 = 200.
+gw_wa1-name = 'ABC'.
+
+COLLECT gw_wa1 INTO gt_itab1.
+
+gw_wa1-var1 = 200.
+gw_wa1-var2 = 300.
+gw_wa1-name = 'XYZ'.
+
+COLLECT gw_wa1 INTO gt_itab1.
+gw_wa1-var1 = 25.
+gw_wa1-var2 = 35.
+gw_wa1-name = 'MNO'.
+
+COLLECT gw_wa1 INTO gt_itab1.
+
+WRITE: / sy-uline(62).
+WRITE: / sy-vline,10 'VAR1',sy-vline,24 'VAR2',sy-vline,57 'NAME',sy-vline.
+WRITE:/ sy-uline(62).
+LOOP AT gt_itab1 INTO gw_wa1.
+  WRITE:/ sy-vline,gw_wa1-var1,sy-vline,gw_wa1-var2,sy-vline,gw_wa1-name,sy-vline.
+  WRITE: / sy-uline(62).
+ENDLOOP.
+"Assignment 5 On INSERT KEYWORD"
+gw_wa2-id = 147.
+gw_wa2-name = 'Suze'.
+gw_wa2-gender = 'Female'.
+gw_wa2-doj = '19960218'.
+
+INSERT gw_wa2 INTO gt_itab2 INDEX 2.
+
+gw_wa2-id = 258.
+gw_wa2-name = 'Mike'.
+gw_wa2-gender = 'Male'.
+gw_wa2-doj = '20030525'.
+
+INSERT gw_wa2 INTO gt_itab2 INDEX 2.
+WRITE: / sy-uline(71).
+WRITE: / sy-vline, 'Index',sy-vline ,'ID',sy-vline,'NAME',sy-vline,'GENDER',sy-vline,'DOJ',sy-vline.
+WRITE: / sy-uline(71).
+LOOP AT gt_itab2 INTO gw_wa2.
+  WRITE:/ sy-vline, 3(5) sy-tabix CENTERED COLOR 3 INVERSE ON ,sy-vline,gw_wa2-id,sy-vline,gw_wa2-name,sy-vline,gw_wa2-gender,sy-vline, gw_wa2-doj,sy-vline.
+ENDLOOP.
+WRITE: / sy-uline(71).
+
+"Assignment 6 ON MOVE KEYWORD "
+gw_purchase-purchaseid = 1.
+gw_purchase-userid = 1.
+gw_purchase-purchasedamount = 2000.
+gw_purchase-currency = 'INR'.
+gw_purchase-dateofpurchase = '20060202'.
+gw_purchase-discountavailed = 'X'.
+
+APPEND gw_purchase TO gt_purchase.
+
+gw_purchase-purchaseid = 1.
+gw_purchase-userid = 2.
+gw_purchase-purchasedamount = 500.
+gw_purchase-currency = 'INR'.
+gw_purchase-dateofpurchase = '20060612'.
+gw_purchase-discountavailed = 'X'.
+
+APPEND gw_purchase TO gt_purchase.
+
+
+gw_pur-purchaseid = 2.
+gw_pur-userid = 1.
+gw_pur-purchasedamount = 1000.
+gw_pur-currency = 'INR'.
+gw_pur-dateofpurchase = '20060520'.
+gw_pur-discountavailed = ' '.
+
+APPEND gw_pur TO gt_pur.
+
+gw_pur-purchaseid = 2.
+gw_pur-userid = 2.
+gw_pur-purchasedamount = 5000.
+gw_pur-currency = 'INR'.
+gw_pur-dateofpurchase = '20060706'.
+gw_pur-discountavailed = 'X'.
+
+APPEND gw_pur TO gt_pur.
+
+gw_pur-purchaseid = 3.
+gw_pur-userid = 1.
+gw_pur-purchasedamount = 3000.
+gw_pur-currency = 'INR'.
+gw_pur-dateofpurchase = '20060413'.
+gw_pur-discountavailed = ' '.
+
+APPEND gw_pur TO gt_pur.
+
+MOVE gt_purchase TO gt_pur.
+
+DATA : BEGIN OF gt_pu OCCURS 3,
+  purchaseid TYPE z715_purchase-purchaseid,
+  purchasedamount TYPE z715_purchase-purchasedamount,
+  discountavailed(3) TYPE c,
+  END OF gt_pu.
+
+DATA: gw_pu LIKE LINE OF gt_pu.
+
+
+
+
+LOOP AT gt_pur INTO gw_pur.
+  IF gw_pur-discountavailed CO 'X'.
+    gw_pur-discountavailed = 'YES'.
+  ELSE.
+    gw_pur-discountavailed = 'NO'.
+  ENDIF.
+  MOVE-CORRESPONDING  gw_pur TO gw_pu.
+  APPEND gw_pu TO gt_pu.
+ENDLOOP.
+
+LOOP AT gt_pu INTO gw_pu.
+  WRITE : / gw_pu-purchaseid, gw_pu-purchasedamount,gw_pu-discountavailed.
+ENDLOOP.
+
+
+"ASSIGNMENT 7 Append Insert Lines Of
+WRITE : / 'BEFORE INSERTING'. ULINE.
+LOOP AT gt_pur INTO gw_pur.
+  WRITE:/ sy-tabix, gw_pur-userid,gw_pur-purchaseid,gw_pur-purchasedamount,
+                  gw_pur-currency,gw_pur-discountavailed.
+ENDLOOP.
+SKIP.SKIP.
+
+APPEND LINES OF gt_purchase FROM 1 TO 2 TO gt_pur.
+
+WRITE : / 'AFTER INSERTING'. ULINE.
+LOOP AT gt_pur INTO gw_pur.
+  WRITE:/ sy-tabix, gw_pur-userid,gw_pur-purchaseid,gw_pur-purchasedamount,
+                  gw_pur-currency,gw_pur-discountavailed.
+ENDLOOP.
+SKIP.SKIP.
+
+
+INSERT LINES OF gt_purchase FROM 1 TO 2 INTO gt_pur INDEX 2.
+
+WRITE : / 'AFTER INSERTING FOR SECOND TIME'. ULINE.
+LOOP AT gt_pur INTO gw_pur.
+  WRITE:/ sy-tabix, gw_pur-userid,gw_pur-purchaseid,gw_pur-purchasedamount,
+                  gw_pur-currency,gw_pur-discountavailed.
+ENDLOOP.
+SKIP.SKIP.
+
+INSERT INITIAL LINE INTO gt_pur INDEX 3.
+
+WRITE : / 'AFTER INSERTING LINE AT INDEX 3'. ULINE.
+LOOP AT gt_pur INTO gw_pur.
+  WRITE:/ sy-tabix, gw_pur-userid,gw_pur-purchaseid,gw_pur-purchasedamount,
+                  gw_pur-currency,gw_pur-discountavailed.
+ENDLOOP.
+
+gw_pur-purchaseid = 3.
+gw_pur-userid = 1.
+gw_pur-purchasedamount = 3000.
+gw_pur-currency = 'INR'.
+gw_pur-dateofpurchase = '20060413'.
+gw_pur-discountavailed = ' '.
+
+APPEND gw_pur TO gt_pur.
+
+gw_pur-purchaseid = 2.
+gw_pur-userid = 1.
+gw_pur-purchasedamount = 1000.
+gw_pur-currency = 'INR'.
+gw_pur-dateofpurchase = '20060520'.
+gw_pur-discountavailed = ' '.
+
+APPEND gw_pur TO gt_pur.
+
+gw_pur-purchaseid = 2.
+gw_pur-userid = 2.
+gw_pur-purchasedamount = 5000.
+gw_pur-currency = 'INR'.
+gw_pur-dateofpurchase = '20060706'.
+gw_pur-discountavailed = 'X'.
+
+APPEND gw_pur TO gt_pur.
+
+READ TABLE gt_pur INTO gw_pur INDEX 2.
+SKIP.
+WRITE: / 'After READ operation at Table Index 2'.
+ULINE.
+
+WRITE:/ sy-tabix, gw_pur-userid,gw_pur-purchaseid,gw_pur-purchasedamount,
+                gw_pur-currency,gw_pur-discountavailed.
+
+"Assignment 10 Select Queries....
+
+SELECT * FROM z715_purchase INTO TABLE gt_purchase.
+WRITE: / 'After Writing Select Statement'.
+ULINE.
+LOOP AT gt_purchase INTO gw_purchase.
+  WRITE:/ sy-tabix, gw_purchase-userid,gw_purchase-purchaseid,gw_purchase-purchasedamount,
+                gw_purchase-currency,gw_purchase-discountavailed.
+ENDLOOP.
+
+SELECT SINGLE * FROM z715_purchase INTO gw_purchase WHERE purchaseid = '0000006002'.
+
+WRITE: / 'After Writing Select single * kewords IN Statement'.
+ULINE.
+
+WRITE:/ sy-tabix ,gw_purchase-userid,gw_purchase-purchaseid,gw_purchase-purchasedamount,
+              gw_purchase-currency,gw_purchase-discountavailed.
+
+
+SELECT * FROM z715_purchase INTO TABLE gt_purchase.
+
+LOOP AT gt_purchase INTO gw_purchase.
+  MOVE-CORRESPONDING gw_purchase TO gw_pu.
+ENDLOOP.
+
+WRITE: / 'After Writing SeleCT * AGAIN WITH another table GT_PU'.
+ULINE.
+LOOP AT gt_pu INTO gw_pu.
+  WRITE:/ sy-tabix ,gw_pu-purchaseid,
+                gw_pu-purchasedamount,gw_pu-discountavailed.
+ENDLOOP.
+

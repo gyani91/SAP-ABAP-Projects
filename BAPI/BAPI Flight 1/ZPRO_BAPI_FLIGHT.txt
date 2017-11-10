@@ -1,0 +1,21 @@
+*&---------------------------------------------------------------------*
+*& Report  ZPRO_BAPI_FLIGHT
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+REPORT  ZPRO_BAPI_FLIGHT.
+
+INCLUDE ZPRO_BAPI_FLIGHT_top.
+INCLUDE ZPRO_BAPI_FLIGHT_scr.
+INCLUDE ZPRO_BAPI_FLIGHT_f01.
+
+START-OF-SELECTION.
+  PERFORM get_flight_details.
+end-of-SELECTION.
+  PERFORM display_flight_details.
+
+AT LINE-SELECTION.
+   PERFORM get_seat_availability.

@@ -1,0 +1,82 @@
+*&---------------------------------------------------------------------*
+*&  Include           ZPRO_BAPI_DEMO_SCR
+*&---------------------------------------------------------------------*
+
+PARAMETERS P_FNAME TYPE STRING.
+
+SELECTION-SCREEN BEGIN OF LINE.
+  PARAMETERS SESSION RADIOBUTTON GROUP CTU.  "create session
+  SELECTION-SCREEN COMMENT 3(20) TEXT-S07 FOR FIELD SESSION.
+  selection-screen position 45.
+  PARAMETERS CTU RADIOBUTTON GROUP  CTU.     "call transaction
+  SELECTION-SCREEN COMMENT 48(20) TEXT-S08 FOR FIELD CTU.
+SELECTION-SCREEN END OF LINE.
+
+SELECTION-SCREEN BEGIN OF LINE.
+  SELECTION-SCREEN COMMENT 3(20) TEXT-S01 FOR FIELD GROUP.
+  selection-screen position 25.
+  PARAMETERS GROUP(12).                      "group name of session
+  SELECTION-SCREEN COMMENT 48(20) TEXT-S05 FOR FIELD CTUMODE.
+  selection-screen position 70.
+  PARAMETERS CTUMODE LIKE CTU_PARAMS-DISMODE DEFAULT 'N'.
+                                      "A: show all dynpros
+                                      "E: show dynpro on error only
+                                      "N: do not display dynpro
+SELECTION-SCREEN END OF LINE.
+
+SELECTION-SCREEN BEGIN OF LINE.
+  SELECTION-SCREEN COMMENT 3(20) TEXT-S02 FOR FIELD USER.
+  selection-screen position 25.
+  PARAMETERS: USER(12) DEFAULT SY-UNAME.     "user for session in batch
+  SELECTION-SCREEN COMMENT 48(20) TEXT-S06 FOR FIELD CUPDATE.
+  selection-screen position 70.
+  PARAMETERS CUPDATE LIKE CTU_PARAMS-UPDMODE DEFAULT 'L'.
+                                      "S: synchronously
+                                      "A: asynchronously
+                                      "L: local
+SELECTION-SCREEN END OF LINE.
+
+SELECTION-SCREEN BEGIN OF LINE.
+  SELECTION-SCREEN COMMENT 3(20) TEXT-S03 FOR FIELD KEEP.
+  selection-screen position 25.
+  PARAMETERS: KEEP AS CHECKBOX.       "' ' = delete session if finished
+                                      "'X' = keep   session if finished
+  SELECTION-SCREEN COMMENT 48(20) TEXT-S09 FOR FIELD E_GROUP.
+  selection-screen position 70.
+  parameters E_GROUP(12).             "group name of error-session
+SELECTION-SCREEN END OF LINE.
+
+SELECTION-SCREEN BEGIN OF LINE.
+  SELECTION-SCREEN COMMENT 3(20) TEXT-S04 FOR FIELD HOLDDATE.
+  selection-screen position 25.
+  PARAMETERS: HOLDDATE LIKE SY-DATUM.
+  SELECTION-SCREEN COMMENT 51(17) TEXT-S02 FOR FIELD E_USER.
+  selection-screen position 70.
+  PARAMETERS: E_USER(12) DEFAULT SY-UNAME.    "user for error-session
+SELECTION-SCREEN END OF LINE.
+
+SELECTION-SCREEN BEGIN OF LINE.
+  SELECTION-SCREEN COMMENT 51(17) TEXT-S03 FOR FIELD E_KEEP.
+  selection-screen position 70.
+  PARAMETERS: E_KEEP AS CHECKBOX.     "' ' = delete session if finished
+                                      "'X' = keep   session if finished
+SELECTION-SCREEN END OF LINE.
+
+SELECTION-SCREEN BEGIN OF LINE.
+  SELECTION-SCREEN COMMENT 51(17) TEXT-S04 FOR FIELD E_HDATE.
+  selection-screen position 70.
+  PARAMETERS: E_HDATE LIKE SY-DATUM.
+SELECTION-SCREEN END OF LINE.
+
+SELECTION-SCREEN SKIP.
+
+SELECTION-SCREEN BEGIN OF LINE.
+  SELECTION-SCREEN COMMENT 1(33) TEXT-S10 FOR FIELD NODATA.
+  PARAMETERS: NODATA DEFAULT '/' LOWER CASE.          "nodata
+SELECTION-SCREEN END OF LINE.
+
+SELECTION-SCREEN BEGIN OF LINE.
+  SELECTION-SCREEN COMMENT 1(33) TEXT-S11 FOR FIELD SMALLLOG.
+  PARAMETERS: SMALLLOG as checkbox.  "' ' = log all transactions
+                                     "'X' = no transaction logging
+SELECTION-SCREEN END OF LINE.

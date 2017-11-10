@@ -1,0 +1,78 @@
+*&---------------------------------------------------------------------*
+*&  Include           MZ681793_CARD_MGMTF01
+*&---------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*&      Form  DISABLE_ELEMENTS
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM DISABLE_ELEMENTS . " FOR DISABLING ELEMENT ON RADIOBUTTON CLICKS
+  IF RB_CARDNUM = 'X'.
+    IF SCREEN-NAME = 'IO_CARDTYPE' OR SCREEN-NAME = 'IO_DFROM' OR SCREEN-NAME = 'IO_DTO'.
+      SCREEN-INPUT = 0.
+      MODIFY SCREEN.
+    ENDIF.
+  ELSEIF RB_CARDTYPE = 'X'.
+    IF SCREEN-NAME = 'IO_CARDNUM' OR SCREEN-NAME = 'IO_DFROM' OR SCREEN-NAME = 'IO_DTO'.
+      SCREEN-INPUT = 0.
+      MODIFY SCREEN.
+    ENDIF.
+  ELSEIF RB_DOB = 'X'.
+    IF SCREEN-NAME = 'IO_CARDTYPE' OR SCREEN-NAME = 'IO_CARDNUM'.
+      SCREEN-INPUT = 0.
+      MODIFY SCREEN.
+    ENDIF.
+  ELSEIF RB_ALL = 'X'.
+    IF SCREEN-NAME = 'IO_CARDNUM' OR SCREEN-NAME = 'IO_CARDTYPE' OR SCREEN-NAME = 'IO_DFROM' OR SCREEN-NAME = 'IO_DTO'.
+      SCREEN-INPUT = 0.
+      MODIFY SCREEN.
+    ENDIF.
+  ENDIF.
+ENDFORM.                    " DISABLE_ELEMENTS
+*&---------------------------------------------------------------------*
+*&      Form  FETCH_DATA
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM FETCH_DATA . " FETCHING DATA INTO INTERNAL TABLE
+  IF gt_CARD is INITIAL.
+    SELECT * FROM Z681793_CARD_DT INTO CORRESPONDING FIELDS OF
+      TABLE gt_CARD.
+  ENDIF.
+ENDFORM.                    " FETCH_DATA
+*&---------------------------------------------------------------------*
+*&      Form  NON_EDITABLE
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM NON_EDITABLE . " MAKING TABLE NON-EDITABLE
+*  DESCRIBE TABLE gt_details LINES lin.
+*  tc-lines = 0.
+ENDFORM.                    " NON_EDITABLE
+*&---------------------------------------------------------------------*
+*&      Form  SELECT-DESELECT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM SELECT-DESELECT . " FOR SELECT-DESELECT ALL BUTTON
+  LOOP AT gt_CARD INTO gw_CARD.
+    IF ok_code = 'FC_SELECT'.
+      GW_CARD-MARK = 'X'.
+    ELSEIF ok_code = 'FC_DESELECT'.
+      GW_CARD-MARK = ' '.
+    ENDIF.
+    MODIFY GT_CARD FROM GW_CARD.
+  ENDLOOP.
+ENDFORM.                    " SELECT-DESELECT

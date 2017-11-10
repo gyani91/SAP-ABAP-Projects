@@ -1,0 +1,178 @@
+**********************************************************************************
+* Author's name         : Mohit Bhatt
+*	                        Nipun Batra
+*                         Abhijeet Majumdar
+*                         Sumeet Gyanchandani
+* Date written          :	03-Mar-2015
+* Program description	  : PAI-Modules for Dialogue Program of RAK Bank Application
+***********************************************************************************
+* Modification #        :
+* Date of modification  :
+* Programmer            :
+* Description           :
+************************************************************************************
+*&---------------------------------------------------------------------*
+*&  Include           YG5_DPR_RAKS_BANK_I01
+*&---------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*&      Module  EXIT_100  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE exit_100 INPUT. "User Commands at exits
+  IF ok_code_100 = 'FC_EXIT'.
+    PERFORM f000-exit.
+  ELSEIF ok_code_100 = 'FC_CANCEL'.
+    PERFORM f001-clear.
+  ENDIF.
+ENDMODULE.                 " EXIT_100  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0100  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0100 INPUT. "User Commands for Interactibility
+  IF ok_code_100 = 'FC_LOGIN'.
+    PERFORM f002-login.
+  ENDIF.
+ENDMODULE.                 " USER_COMMAND_0100  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  EXIT_200  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE exit_200 INPUT. "User Commmand at Exits
+  IF ok_code_200 = 'FC_EXIT'.
+    PERFORM f000-exit.
+  ELSEIF ok_code_200 = 'FC_CANCEL'.
+    CLEAR: yg5_account, yg5_balance, io_cal_amt.
+    PERFORM f001-clear.
+  ELSEIF ok_code_200 = 'FC_BACK'.
+    CLEAR yg5_customers.
+    LEAVE TO  SCREEN 0.
+  ENDIF.
+ENDMODULE.                 " EXIT_200  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0200  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0200 INPUT.     "User Commands for Interactibility
+  IF ok_code_200 = 'FC_HOME'.
+    PERFORM f004-navigate_scr USING '200'.
+  ELSEIF ok_code_200 = 'FC_VTD'.
+    PERFORM f004-navigate_scr USING '300'.
+  ELSEIF ok_code_200 = 'FC_CH_AC'.
+    SKIP.
+  ELSEIF ok_code_200 = 'FC_VAS'.
+    PERFORM f005-call_alv_rprt_transaction.
+  ENDIF.
+ENDMODULE.                 " USER_COMMAND_0200  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0200  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+" USER_COMMAND_0200  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0300  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0300 INPUT. "Inserting data into DDIC table
+
+  IF ok_code_300 = 'FC_VIEW300'.
+    flag_300 = 1.
+  ELSEIF ok_code_300 = 'FC_HOME'.
+    PERFORM f004-navigate_scr USING '200'.
+  ELSEIF ok_code_300 = 'FC_PRINT'.
+    PERFORM f017-smartform_print.
+  ENDIF.
+ENDMODULE.                 " USER_COMMAND_0300  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  VALIDATE_DATE_300  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE validate_date_300 INPUT. "Validate Date on Screen 0300
+  PERFORM f007-validate_date_300.
+ENDMODULE.                 " VALIDATE_DATE_300  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  EXIT_300  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE exit_300 INPUT. "User Commmand at Exits
+
+  IF ok_code_300 = 'FC_EXIT'.
+    PERFORM f000-exit.
+  ELSEIF ok_code_300 = 'FC_CANCEL'.
+    PERFORM f001-clear.
+  ELSEIF ok_code_300 = 'FC_BACK'.
+    PERFORM f008-back.
+  ELSEIF ok_code_300 = 'FC_PRINT'.
+    PERFORM f017-smartform_print.
+
+  ENDIF.
+
+
+ENDMODULE.                 " EXIT_300  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0210  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0210 INPUT. "User Commands for Interactibility
+
+  IF ok_code_200 = 'FC_AL_210'.
+    yg5_transaction-tran_desc = v_remark_desc.
+    v_stype = 'L'.
+    yg5_transaction-tran_type = 'C'.
+    PERFORM f011-insert_transaction. "Inserting data into DDIC table
+
+  ENDIF.
+ENDMODULE.                 " USER_COMMAND_0210  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  VALIDATE_210  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE validate_210 INPUT. "Validating loan amount
+*  MOVE IO_CAL_AMT TO V_VERIFY_AMT.
+  IF ok_code_200 = 'FC_AL_210' AND ( io_cal_amt IS INITIAL OR io_cal_amt > io_mea ) .
+    MESSAGE e004(ymc_g5_raksbank). "Please enter a amount > 0 and <= eligible amount
+  ENDIF.
+  IF ok_code_200 = 'FC_AL_210' AND io_cal_amt LE 0.
+    MESSAGE E013(ymc_g5_raksbank). "CREDIT AMOUNT SHOULD BE GREATER THAN ZERO
+    ENDIF.
+ENDMODULE.                 " VALIDATE_210  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0220  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0220 INPUT. "Inserting data into DDIC table
+  IF  ok_code_200 = 'FC_DISCOUNT'.
+    f_flag_220 = 'X'.
+  ELSEIF ok_code_200 = 'FC_PAY'.
+    v_stype = 'O'.
+    yg5_transaction-tran_type = 'D'.
+    PERFORM f011-insert_transaction.
+  ENDIF.
+ENDMODULE.                 " USER_COMMAND_0220  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  VALIDATE_220  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE validate_220 INPUT. "Validating data
+  PERFORM f014-validate_220.
+ENDMODULE.                 " VALIDATE_220  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  LOAD_DATA_TC_300  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE load_data_tc_300 OUTPUT.
+  PERFORM f015-tc_chk.
+ENDMODULE.                 " LOAD_DATA_TC_300  OUTPUT

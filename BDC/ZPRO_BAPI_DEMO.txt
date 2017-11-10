@@ -1,0 +1,54 @@
+REPORT zpro_bapi_demo
+       NO STANDARD PAGE HEADING LINE-SIZE 255.
+
+*include bdcrecx1.
+INCLUDE zpro_bapi_demo_top.
+INCLUDE zpro_bapi_demo_scr.
+INCLUDE zpro_bapi_demo_f01.
+
+
+AT SELECTION-SCREEN ON VALUE-REQUEST FOR P_FNAME.
+  PERFORM GET_PATH.
+
+*----------------------------------------------------------------------*
+*   at selection screen                                                *
+*----------------------------------------------------------------------*
+AT SELECTION-SCREEN.
+* group and user must be filled for create session
+  IF session = 'X' AND
+     group = space OR user = space.
+    MESSAGE e613(ms).
+  ENDIF.
+
+START-OF-SELECTION.
+
+  PERFORM GET_DATA_FROM_FILE.
+  PERFORM open_group.
+
+LOOP AT GT_USER INTO GW_USER.
+  PERFORM bdc_dynpro      USING 'SAPMZ93_DEMO' '0102'.
+  PERFORM bdc_field       USING 'BDC_CURSOR'
+                                'YMB_USER-CREATED_ON'.
+  PERFORM bdc_field       USING 'BDC_OKCODE'
+                                '=FC_SAVE'.
+  PERFORM bdc_field       USING 'YMB_USER-USERID'
+                                gw_user-userid.
+  PERFORM bdc_field       USING 'YMB_USER-USERNAME'
+                                gw_user-username.
+  PERFORM bdc_field       USING 'YMB_USER-USERTYPE'
+                                gw_user-usertype.
+  PERFORM bdc_field       USING 'YMB_USER-PASSWORD'
+                                gw_user-password.
+  PERFORM bdc_field       USING 'YMB_USER-CREATED_ON'
+                                gw_user-created_on.
+  PERFORM bdc_dynpro      USING 'SAPMZ93_DEMO' '0102'.
+  PERFORM bdc_field       USING 'BDC_OKCODE'
+                                '/EFC_EXIT'.
+  PERFORM bdc_field       USING 'BDC_CURSOR'
+                                'YMB_USER-USERID'.
+  PERFORM bdc_transaction USING 'YMB_T3'.
+
+ENDLOOP.
+  PERFORM close_group.
+
+INCLUDE ZPRO_BAPI_DEMO_AO01.

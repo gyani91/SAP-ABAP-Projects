@@ -1,0 +1,7 @@
+*&---------------------------------------------------------------------*
+*&  Include           ZPRO_BAPI_FLIGHT2_TOP
+*&---------------------------------------------------------------------*
+
+DATA: wa_booking type BAPISBONEW.
+data  bno TYPE BAPISBOKEY-BOOKINGID.
+DATA price TYPE BAPISBOPRI.

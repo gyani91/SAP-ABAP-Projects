@@ -1,0 +1,213 @@
+*&---------------------------------------------------------------------*
+*&  Include           ZPRO_BAPI_DEMO_F01
+*&---------------------------------------------------------------------*
+
+
+
+
+
+*----------------------------------------------------------------------*
+*   open dataset                                                       *
+*----------------------------------------------------------------------*
+FORM open_dataset USING p_dataset.
+  OPEN DATASET p_dataset
+               FOR INPUT IN TEXT MODE
+               ENCODING DEFAULT.
+  IF sy-subrc <> 0.
+    WRITE: / text-e00, sy-subrc.
+    STOP.
+  ENDIF.
+ENDFORM.                    "OPEN_DATASET
+
+*----------------------------------------------------------------------*
+*   close dataset                                                      *
+*----------------------------------------------------------------------*
+FORM close_dataset USING p_dataset.
+  CLOSE DATASET p_dataset.
+ENDFORM.                    "CLOSE_DATASET
+
+*----------------------------------------------------------------------*
+*   create batchinput session                                          *
+*   (not for call transaction using...)                                *
+*----------------------------------------------------------------------*
+FORM open_group.
+  IF session = 'X'.
+    SKIP.
+    WRITE: /(20) 'Create group'(i01), group.
+    SKIP.
+*   open batchinput group
+    CALL FUNCTION 'BDC_OPEN_GROUP'
+      EXPORTING
+        client   = sy-mandt
+        group    = group
+        user     = user
+        keep     = keep
+        holddate = holddate.
+    WRITE: /(30) 'BDC_OPEN_GROUP'(i02),
+            (12) 'returncode:'(i05),
+                 sy-subrc.
+  ENDIF.
+ENDFORM.                    "OPEN_GROUP
+
+*----------------------------------------------------------------------*
+*   end batchinput session                                             *
+*   (call transaction using...: error session)                         *
+*----------------------------------------------------------------------*
+FORM close_group.
+  IF session = 'X'.
+*   close batchinput group
+    CALL FUNCTION 'BDC_CLOSE_GROUP'.
+    WRITE: /(30) 'BDC_CLOSE_GROUP'(i04),
+            (12) 'returncode:'(i05),
+                 sy-subrc.
+  ELSE.
+    IF e_group_opened = 'X'.
+      CALL FUNCTION 'BDC_CLOSE_GROUP'.
+      WRITE: /.
+      WRITE: /(30) 'Fehlermappe wurde erzeugt'(i06).
+      e_group_opened = ' '.
+    ENDIF.
+  ENDIF.
+ENDFORM.                    "CLOSE_GROUP
+
+*----------------------------------------------------------------------*
+*        Start new transaction according to parameters                 *
+*----------------------------------------------------------------------*
+FORM bdc_transaction USING tcode.
+  DATA: l_mstring(480).
+  DATA: l_subrc LIKE sy-subrc.
+* batch input session
+  IF session = 'X'.
+    CALL FUNCTION 'BDC_INSERT'
+      EXPORTING
+        tcode     = tcode
+      TABLES
+        dynprotab = bdcdata.
+    IF smalllog <> 'X'.
+      WRITE: / 'BDC_INSERT'(i03),
+               tcode,
+               'returncode:'(i05),
+               sy-subrc,
+               'RECORD:',
+               sy-index.
+    ENDIF.
+* call transaction using
+  ELSE.
+    REFRESH messtab.
+    CALL TRANSACTION tcode USING bdcdata
+                     MODE   ctumode
+                     UPDATE cupdate
+                     MESSAGES INTO messtab.
+    l_subrc = sy-subrc.
+    IF smalllog <> 'X'.
+      WRITE: / 'CALL_TRANSACTION',
+               tcode,
+               'returncode:'(i05),
+               l_subrc,
+               'RECORD:',
+               sy-index.
+      LOOP AT messtab.
+        SELECT SINGLE * FROM t100 WHERE sprsl = messtab-msgspra
+                                  AND   arbgb = messtab-msgid
+                                  AND   msgnr = messtab-msgnr.
+        IF sy-subrc = 0.
+          l_mstring = t100-text.
+          IF l_mstring CS '&1'.
+            REPLACE '&1' WITH messtab-msgv1 INTO l_mstring.
+            REPLACE '&2' WITH messtab-msgv2 INTO l_mstring.
+            REPLACE '&3' WITH messtab-msgv3 INTO l_mstring.
+            REPLACE '&4' WITH messtab-msgv4 INTO l_mstring.
+          ELSE.
+            REPLACE '&' WITH messtab-msgv1 INTO l_mstring.
+            REPLACE '&' WITH messtab-msgv2 INTO l_mstring.
+            REPLACE '&' WITH messtab-msgv3 INTO l_mstring.
+            REPLACE '&' WITH messtab-msgv4 INTO l_mstring.
+          ENDIF.
+          CONDENSE l_mstring.
+          WRITE: / messtab-msgtyp, l_mstring(250).
+        ELSE.
+          WRITE: / messtab.
+        ENDIF.
+      ENDLOOP.
+      SKIP.
+    ENDIF.
+** Erzeugen fehlermappe ************************************************
+    IF l_subrc <> 0 AND e_group <> space.
+      IF e_group_opened = ' '.
+        CALL FUNCTION 'BDC_OPEN_GROUP'
+          EXPORTING
+            client   = sy-mandt
+            group    = e_group
+            user     = e_user
+            keep     = e_keep
+            holddate = e_hdate.
+        e_group_opened = 'X'.
+      ENDIF.
+      CALL FUNCTION 'BDC_INSERT'
+        EXPORTING
+          tcode     = tcode
+        TABLES
+          dynprotab = bdcdata.
+    ENDIF.
+  ENDIF.
+  REFRESH bdcdata.
+ENDFORM.                    "BDC_TRANSACTION
+
+*----------------------------------------------------------------------*
+*        Start new screen                                              *
+*----------------------------------------------------------------------*
+FORM bdc_dynpro USING program dynpro.
+  CLEAR bdcdata.
+  bdcdata-program  = program.
+  bdcdata-dynpro   = dynpro.
+  bdcdata-dynbegin = 'X'.
+  APPEND bdcdata.
+ENDFORM.                    "BDC_DYNPRO
+
+*----------------------------------------------------------------------*
+*        Insert field                                                  *
+*----------------------------------------------------------------------*
+FORM bdc_field USING fnam fval.
+  IF fval <> nodata.
+    CLEAR bdcdata.
+    bdcdata-fnam = fnam.
+    bdcdata-fval = fval.
+    APPEND bdcdata.
+  ENDIF.
+ENDFORM.                    "BDC_FIELD
+*&---------------------------------------------------------------------*
+*&      Form  GET_DATA_FROM_FILE
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM get_data_from_file .
+  CALL FUNCTION 'GUI_UPLOAD'
+    EXPORTING
+      filename            = p_fname
+      filetype            = 'ASC'
+      has_field_separator = 'X'
+    TABLES
+      data_tab            = gt_user.
+ENDFORM.                    " GET_DATA_FROM_FILE
+*&---------------------------------------------------------------------*
+*&      Form  GET_PATH
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM get_path .
+  DATA fname TYPE ibipparms-path.
+  CALL FUNCTION 'F4_FILENAME'
+    EXPORTING
+      program_name  = syst-cprog
+      dynpro_number = syst-dynnr
+      field_name    = 'P_FNAME'
+    IMPORTING
+      file_name     = fname.
+  p_fname = fname.
+ENDFORM.                    " GET_PATH

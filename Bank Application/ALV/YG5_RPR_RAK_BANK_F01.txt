@@ -1,0 +1,277 @@
+**************************************************
+* Author's name         : Mohit Bhatt
+*	                        Nipun Batra
+*                         Abhijeet Majumdar
+*                         Sumeet Gyanchandani
+* Date written          :	03-Mar-2015
+* Program description	  : Program for Subroutine Definition
+**************************************************
+* Modification #        :
+* Date of modification  :
+* Programmer            :
+* Description           :
+**************************************************
+*&---------------------------------------------------------------------*
+*&      Form  F000-FETCH_DATA
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+
+************** START OF SUBROUTINE DEFINITION ************************************
+
+FORM F000-FETCH_DATA. "Fetching Account Details for Summary
+
+  GET PARAMETER ID 'P_CUST_ID' FIELD P_CUST_ID. "Getting data from SAP memory
+
+  SELECT * FROM YG5_ACCOUNT INTO TABLE GT_ACCOUNT "FETCHING DATA FROM ACCOUNT TABLE
+    WHERE CUST_ID = P_CUST_ID.
+  IF SY-SUBRC NE 0.  "If no record found
+    MESSAGE E010(YMC_G5_RAKSBANK). "DATA NOT FOUND IN ACCOUNT TABLE
+  ENDIF.
+
+  SELECT * FROM YG5_BALANCE INTO TABLE GT_BALANCE "FETCHING DATA FROM BALANCE TABLE
+    FOR ALL ENTRIES IN GT_ACCOUNT
+    WHERE ACCOUNT_NO = GT_ACCOUNT-ACCOUNT_NO.
+  IF SY-SUBRC NE 0.  "If no record found
+    MESSAGE E009(YMC_G5_RAKSBANK). "DATA NOT FOUND IN BALANCE TABLE
+  ENDIF.
+
+  LOOP AT GT_BALANCE INTO GW_BALANCE.  "Loop in Balance Internal Table
+
+    READ TABLE GT_ACCOUNT INTO GW_ACCOUNT WITH KEY ACCOUNT_NO = GW_BALANCE-ACCOUNT_NO. "Reading records from account internal table
+
+    MOVE-CORRESPONDING GW_BALANCE TO GW_ITEM.  "Moving Records from balance work area to item work area
+    MOVE-CORRESPONDING GW_ACCOUNT TO GW_ITEM.  "Moving Records from account work area to item work area
+    MOVE-CORRESPONDING GW_ACCOUNT TO GW_HEADER. "Moving Records from account work area to header work area
+
+    CASE GW_ACCOUNT-ACCOUNT_TYPE.   "Switch Case on account type
+      WHEN 'S'.  "if case is S
+        GW_ITEM-ACCOUNT_TYPE = 'Savings'.  "Assign Savings to workarea of accounttype
+      WHEN 'C'. "if case is C
+        GW_ITEM-ACCOUNT_TYPE = 'Current'.  "Assign Current to workarea of accounttype
+      WHEN OTHERS. "for others
+    ENDCASE.
+
+    APPEND GW_HEADER to GT_HEADER.  "Appending records of header work area to internal table
+    APPEND GW_ITEM TO GT_ITEM.  "Appending records of item work area to internal table
+
+  ENDLOOP.
+
+
+ENDFORM.                    " F000-FETCH_DATA
+*&---------------------------------------------------------------------*
+*&      Form  F001-FILL_KEYINFO
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM F001-FILL_KEYINFO .  "Subroutine to implement keyinfo workarea
+
+  GW_KEYINFO-HEADER01 = 'ACCOUNT_NO'.  "Assigning header to keyinfo workarea
+  GW_KEYINFO-ITEM01 = 'ACCOUNT_NO'.   "Assigning item to keyinfo workarea
+
+
+ENDFORM.                    " F001-FILL_KEYINFO
+*&---------------------------------------------------------------------*
+*&      Form  F002-FILL_FIELD_CATALOG
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM F002-FILL_FIELD_CATALOG . "Subroutine to implement fieldcatalog workarea
+
+  GW_HIER_FCAT-COL_POS = 1.   "Assigning Column Position to fieldcatalog workarea
+  GW_HIER_FCAT-FIELDNAME = 'ACCOUNT_NO'.  "Assigning fieldname to fieldcatalog workarea
+  GW_HIER_FCAT-TABNAME = 'GT_HEADER'. "Assigning table name to fieldcatalog workarea
+  GW_HIER_FCAT-OUTPUTLEN = 14.  "Assigning Output length to fieldcatalog workarea
+  GW_HIER_FCAT-SELTEXT_M = 'ACCOUNT_NUMBER'.  "Assigning Selection Text to fieldcatalog workarea
+  GW_HIER_FCAT-KEY = 'X'. "Assigning Key to fieldcatalog workarea
+
+  APPEND GW_HIER_FCAT TO GT_HIER_FCAT.  "Appending records of fieldcatalog work area to internal table
+  CLEAR GW_HIER_FCAT.
+
+
+  GW_HIER_FCAT-COL_POS = 1.
+  GW_HIER_FCAT-FIELDNAME = 'ACCOUNT_TYPE'.
+  GW_HIER_FCAT-TABNAME = 'GT_ITEM'.
+  GW_HIER_FCAT-OUTPUTLEN = 15.
+  GW_HIER_FCAT-SELTEXT_M = 'ACCOUNT_TYPE'.
+  GW_HIER_FCAT-EMPHASIZE = 'C500'.
+
+  APPEND GW_HIER_FCAT TO GT_HIER_FCAT.
+  CLEAR GW_HIER_FCAT.
+
+
+  GW_HIER_FCAT-COL_POS = 2.
+  GW_HIER_FCAT-FIELDNAME = 'BALANCE'.
+  GW_HIER_FCAT-TABNAME = 'GT_ITEM'.
+  GW_HIER_FCAT-OUTPUTLEN = 15.
+  GW_HIER_FCAT-SELTEXT_M = 'BALANCE'.
+  GW_HIER_FCAT-EMPHASIZE = 'C200'.  "Assigning formatting to fieldcatalog workarea
+
+  APPEND GW_HIER_FCAT TO GT_HIER_FCAT.
+  CLEAR GW_HIER_FCAT.
+
+
+  GW_HIER_FCAT-COL_POS = 3.
+  GW_HIER_FCAT-FIELDNAME = 'CURRENCY'.
+  GW_HIER_FCAT-TABNAME = 'GT_ITEM'.
+  GW_HIER_FCAT-OUTPUTLEN = 8.
+  GW_HIER_FCAT-SELTEXT_M = 'CURRENCY'.
+  GW_HIER_FCAT-EMPHASIZE = 'C600'.
+
+  APPEND GW_HIER_FCAT TO GT_HIER_FCAT.
+  CLEAR GW_HIER_FCAT.
+
+
+  GW_HIER_FCAT-COL_POS = 4.
+  GW_HIER_FCAT-FIELDNAME = 'CREATED_ON'.
+  GW_HIER_FCAT-TABNAME = 'GT_ITEM'.
+  GW_HIER_FCAT-OUTPUTLEN = 10.
+  GW_HIER_FCAT-SELTEXT_M = 'CREATED_ON'.
+  GW_HIER_FCAT-EMPHASIZE = 'C100'.
+
+  APPEND GW_HIER_FCAT TO GT_HIER_FCAT.
+  CLEAR GW_HIER_FCAT.
+
+
+
+ENDFORM.                    " F002-FILL_FIELD_CATALOG
+*&---------------------------------------------------------------------*
+*&      Form  F003-FILL_EVENT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM F003-FILL_EVENT ."Subroutine to implement events workarea
+
+  CALL FUNCTION 'REUSE_ALV_EVENTS_GET'  "Function module to implement events
+ EXPORTING
+   I_LIST_TYPE           = 0
+ IMPORTING
+   ET_EVENTS             = GT_EVENTS  "Internal table of events
+* EXCEPTIONS
+*   LIST_TYPE_WRONG       = 1
+*   OTHERS                = 2
+            .
+  IF SY-SUBRC <> 0."If no record found
+    MESSAGE E011(YMC_G5_RAKSBANK). "REUSE_ALV_EVENTS_GET failed to execute successfully
+  ENDIF.
+
+  READ TABLE GT_EVENTS INTO GW_EVENTS WITH KEY NAME = 'TOP_OF_PAGE'. "Reading table events with the TOP_OF_PAGE subroutine
+  IF SY-SUBRC = 0. "If any record found
+    GW_EVENTS-FORM = 'FORM_TOP_OF_PAGE'. "Assigning form to the top of page event
+    MODIFY GT_EVENTS FROM GW_EVENTS INDEX SY-TABIX. "modifying events internal table
+  ENDIF.
+
+  READ TABLE GT_EVENTS INTO GW_EVENTS WITH KEY NAME = 'END_OF_LIST'."Reading table events with the END_OF_LIST subroutine
+  IF SY-SUBRC = 0. "If any record found
+    GW_EVENTS-FORM = 'FORM_END_OF_LIST'. "Assigning form to the end of list event
+    MODIFY GT_EVENTS FROM GW_EVENTS INDEX SY-TABIX. "modifying events internal table
+  ENDIF.
+
+ENDFORM.
+" F003-FILL_EVENT
+*&---------------------------------------------------------------------*
+*&      Form  F004-FILL_LAYOUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+
+FORM FORM_TOP_OF_PAGE. "Subroutine for top of page event
+
+  WRITE : /20 TEXT-T00 COLOR 3. "printing header with color code
+  SKIP. "new line
+  WRITE : TEXT-T01, GW_HEADER-CUST_ID COLOR 6 INVERSE ON, TEXT-T02 RIGHT-JUSTIFIED, SY-DATUM COLOR 6 INVERSE ON.
+
+ENDFORM.
+
+FORM FORM_END_OF_LIST.  "Subroutine for end of list event
+
+  SKIP.
+  WRITE : /20 TEXT-T03 COLOR 3. "printing footer with color code
+
+ENDFORM.
+
+
+FORM F004-FILL_LAYOUT . "Subroutine for fill layout
+
+  GW_LAYOUT-EXPAND_FIELDNAME = 'EXPAND'.  "Assigning expand variable to fielname
+  GW_LAYOUT-LIGHTS_TABNAME = 'GT_HEADER'. "Assigning header internal table to lights_tabname
+
+
+ENDFORM.                    " F004-FILL_LAYOUT
+*&---------------------------------------------------------------------*
+*&      Form  F005-DISPLAY_HIERARCHY
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM F005-DISPLAY_HIERARCHY . "Subroutine for hierachical ALV display
+
+  CALL FUNCTION 'REUSE_ALV_HIERSEQ_LIST_DISPLAY' "Function module to implement hierarchical list display
+    EXPORTING
+*     I_INTERFACE_CHECK              = ' '
+      I_CALLBACK_PROGRAM             = SY-REPID    "Assigning Program Name to Callback Program
+*     I_CALLBACK_PF_STATUS_SET       = ' '
+*     I_CALLBACK_USER_COMMAND        = ' '
+     IS_LAYOUT                      = GW_LAYOUT   "Assigning layout work area to is_layout
+     IT_FIELDCAT                    = GT_HIER_FCAT  "Assigning hierarchical work area to it_fieldcat
+*     IT_EXCLUDING                   =
+*     IT_SPECIAL_GROUPS              =
+*     IT_SORT                        =
+*     IT_FILTER                      =
+*     IS_SEL_HIDE                    =
+*     I_SCREEN_START_COLUMN          = 0
+*     I_SCREEN_START_LINE            = 0
+*     I_SCREEN_END_COLUMN            = 0
+*     I_SCREEN_END_LINE              = 0
+*     I_DEFAULT                      = 'X'
+*     I_SAVE                         = ' '
+*     IS_VARIANT                     =
+     IT_EVENTS                      = GT_EVENTS  "Assigning events internal table to  it_events
+*     IT_EVENT_EXIT                  =
+      I_TABNAME_HEADER               = 'GT_HEADER' "Assigning header internal table to i_tabname_header
+      I_TABNAME_ITEM                 = 'GT_ITEM' "Assigning item internal table to i_tabname_item
+*     I_STRUCTURE_NAME_HEADER        =
+*     I_STRUCTURE_NAME_ITEM          =
+      IS_KEYINFO                     = GW_KEYINFO "Assigning keyinfo work area to is_keyinfo
+*     IS_PRINT                       =
+*     IS_REPREP_ID                   =
+*     I_BYPASSING_BUFFER             =
+*     I_BUFFER_ACTIVE                =
+*     IR_SALV_HIERSEQ_ADAPTER        =
+*     IT_EXCEPT_QINFO                =
+*     I_SUPPRESS_EMPTY_DATA          = ABAP_FALSE
+*   IMPORTING
+*     E_EXIT_CAUSED_BY_CALLER        =
+*     ES_EXIT_CAUSED_BY_USER         =
+    TABLES
+      T_OUTTAB_HEADER                = GT_HEADER  "Assigning header internal table to t_outtab_header
+      T_OUTTAB_ITEM                  = GT_ITEM "Assigning item internal table to t_outtab_item
+*   EXCEPTIONS
+*     PROGRAM_ERROR                  = 1
+*     OTHERS                         = 2
+            .
+  IF SY-SUBRC <> 0. "if not executed successfully
+    MESSAGE E012(YMC_G5_RAKSBANK). "Hierarchical list failed to execute successfully
+  ENDIF.
+
+
+ENDFORM.                    " F005-DISPLAY_HIERARCHY1
+
+************** END OF SUBROUTINE DEFINITION ************************************

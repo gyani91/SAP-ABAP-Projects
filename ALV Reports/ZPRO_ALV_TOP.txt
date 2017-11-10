@@ -1,0 +1,46 @@
+*&---------------------------------------------------------------------*
+*&  Include           ZPRO_ALV_TOP
+*&---------------------------------------------------------------------*
+
+DATA: utype TYPE z681797_user-usertype,
+      v_count TYPE i,
+      choice TYPE c.
+
+DATA: pcode TYPE z681797_product-pr_code,
+      pid TYPE z797_purchase_it-purchaseid.
+
+TYPES: BEGIN OF ls_output,
+*      userid TYPE z681797_user-userid,
+       purchaseid TYPE z797_purchase_it-purchaseid,
+       itemno TYPE z797_purchase_it-itemno,
+       pr_code TYPE z797_purchase_it-pr_code,
+       quantity TYPE z797_purchase_it-quantity,
+       price TYPE z681797_product-price,
+       netprice TYPE p DECIMALS 2,
+  END OF ls_output.
+
+DATA: gt_output TYPE STANDARD TABLE OF ls_output,
+      gw_output LIKE LINE OF gt_output.
+
+DATA: gt_pur TYPE STANDARD TABLE OF z681797_purchase,
+      gw_pur LIKE LINE OF gt_pur.
+
+DATA: gt_pr TYPE STANDARD TABLE OF z681797_product,
+      gw_pr LIKE LINE OF gt_pr.
+
+DATA: gt_pi TYPE STANDARD TABLE OF z797_purchase_it,
+      gw_pi LIKE LINE OF gt_pi.
+
+DATA: gt_events TYPE slis_t_event,
+      gw_events LIKE LINE OF gt_events.
+
+DATA: gt_header TYPE slis_t_listheader,
+      gw_header LIKE LINE OF gt_header.
+
+DATA:  gw_layout TYPE slis_layout_alv.
+
+DATA: gt_fcat TYPE slis_t_fieldcat_alv,
+      gw_fcat TYPE LINE OF slis_t_fieldcat_alv.
+
+DATA gt_sort TYPE slis_t_sortinfo_alv.
+DATA gw_sort LIKE LINE OF gt_sort.

@@ -1,0 +1,39 @@
+*&---------------------------------------------------------------------*
+*& Report  ZPRO_ALV
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+REPORT  zpro_alv.
+
+INCLUDE zpro_alv_top.
+
+INCLUDE zpro_alv_scr.
+
+INCLUDE zpro_alv_f01.
+
+
+INITIALIZATION.
+  PERFORM init.
+
+AT SELECTION-SCREEN.
+  PERFORM select_scr.
+
+AT SELECTION-SCREEN ON s_pid.
+  PERFORM validate_pid.
+
+AT SELECTION-SCREEN ON s_pcode.
+  PERFORM validate_pcode.
+
+START-OF-SELECTION.
+  PERFORM data_fetch.
+  PERFORM data_process.
+  PERFORM fill_fcat.
+  PERFORM fill_sort.
+  PERFORM fill_layout.
+  PERFORM fill_events.
+
+END-OF-SELECTION.
+  PERFORM display.

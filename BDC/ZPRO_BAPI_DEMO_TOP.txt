@@ -1,0 +1,32 @@
+*&---------------------------------------------------------------------*
+*&  Include           ZPRO_BAPI_DEMO_TOP
+*&---------------------------------------------------------------------*
+
+TYPES: BEGIN OF LS_USER,
+  USERID(5),
+USERNAME(30),
+USERTYPE(1),
+PASSWORD(12),
+CREATED_ON(10),
+END OF LS_USER.
+
+DATA: GT_USER TYPE STANDARD TABLE OF LS_USER,
+      GW_USER LIKE LINE OF GT_USER.
+
+***INCLUDE BDCRECX1.
+*  for programs doing a data transfer by creating a batch-input session
+*  and
+*  for programs doing a data transfer by CALL TRANSACTION USING
+
+*----------------------------------------------------------------------*
+*   data definition
+*----------------------------------------------------------------------*
+*       Batchinputdata of single transaction
+DATA:   BDCDATA LIKE BDCDATA    OCCURS 0 WITH HEADER LINE.
+*       messages of call transaction
+DATA:   MESSTAB LIKE BDCMSGCOLL OCCURS 0 WITH HEADER LINE.
+*       error session opened (' ' or 'X')
+DATA:   E_GROUP_OPENED.
+*       message texts
+TABLES: T100.
+data  B(20).

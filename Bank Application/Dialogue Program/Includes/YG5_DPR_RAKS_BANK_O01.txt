@@ -1,0 +1,176 @@
+**********************************************************************************
+* Author's name         : Mohit Bhatt
+*	                        Nipun Batra
+*                         Abhijeet Majumdar
+*                         Sumeet Gyanchandani
+* Date written          :	03-Mar-2015
+* Program description	  : PBO-Modules for Dialogue Program of RAK Bank Application
+***********************************************************************************
+* Modification #        :
+* Date of modification  :
+* Programmer            :
+* Description           :
+************************************************************************************
+
+*&---------------------------------------------------------------------*
+*&  Include           YG5_DPR_RAKS_BANK_O01
+*&---------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_0100  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE status_0100 OUTPUT. "GUI Status and GUI Title for Screen 0100
+  SET PF-STATUS 'PF_100'.
+  SET TITLEBAR 'TITLE_100'.
+
+ENDMODULE.                 " STATUS_0100  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_0200  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE status_0200 OUTPUT. "GUI Status and GUI Title for Screen 0200
+  SET PF-STATUS 'PF_200'.
+  SET TITLEBAR 'TITLE_200' WITH yg5_customers-cust_name sy-datlo.
+
+ENDMODULE.                 " STATUS_0200  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_0300  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE status_0300 OUTPUT. "GUI Status and GUI Title for Screen 0300
+  SET PF-STATUS 'PF_300'.
+  SET TITLEBAR 'TITLE_200' WITH yg5_customers-cust_name sy-datlo.
+
+ENDMODULE.                 " STATUS_0300  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  GET_OFFERS  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE get_offers OUTPUT. "Performing checks for availing loan
+  PERFORM F006-chk_eligibility.
+ENDMODULE.                 " GET_OFFERS  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  GET_OFFERS  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*&      Module  FETCH_DATA_300  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE fetch_data_300 OUTPUT. "Fetching data multiple DDIC tables
+  PERFORM F005-init_200.
+  IF ok_code_300 <> 'FC_VIEW300'. "Check for valid dates
+    CLEAR: io_from, io_to.
+  ENDIF.
+  IF flag_300 = 1.
+    PERFORM F016-load_data. "Populating Data in Screen 300
+    CLEAR flag_300.
+  ENDIF.
+ENDMODULE.                 " FETCH_DATA_300  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  INIT_200  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE init_200 OUTPUT. "Initializing Screen 200
+  PERFORM F005-init_200.
+ENDMODULE.                 " INIT_200  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  INIT_200  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+" INIT_200  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  F4_GET_ACNTNO  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+" F4_GET_ACNTNO  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  F4_GET_ACNTNO  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE f4_get_acntno INPUT. "F4 help for account no
+  PERFORM F009-get_acntnos.
+ENDMODULE.                 " F4_GET_ACNTNO  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  INIT_210  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE init_210 OUTPUT. "Initializing Screen 210
+  IF sy-dynnr = 210.
+    PERFORM F013-set_remarks.
+    v_days = sy-datum - 150.
+    SELECT SINGLE * FROM yg5_service
+      WHERE service_id IN (
+      SELECT service_id FROM yg5_transaction
+      WHERE account_no = yg5_account-account_no
+      AND tran_date > v_days )
+      AND service_type = 'L' .
+    IF sy-subrc = 0.
+      io_mea = 0.
+      LOOP AT SCREEN.
+        IF screen-name = 'PB_AVAIL_LOAN'.
+          screen-input = 0.
+          MODIFY SCREEN.
+        ENDIF.
+      ENDLOOP.
+    ELSE.
+      IF r_car = 'X'. "Calculating Maxmimum Loan Amount
+        PERFORM F010-eligible_loan_amount USING 5.
+      ELSEIF r_home = 'X'.
+        PERFORM F010-eligible_loan_amount USING 10.
+      ELSEIF r_personal = 'X'.
+        PERFORM F010-eligible_loan_amount USING 3.
+      ENDIF.
+    ENDIF.
+  ENDIF.
+ENDMODULE.                 " INIT_210  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  INIT_220  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE init_220 OUTPUT. "Initializing Screen 220
+  IF sy-dynnr = 220.
+    PERFORM F013-set_remarks.
+    IF amount IS INITIAL.
+      discount = 0.
+      io_cal_amt = 0.
+    ENDIF.
+    IF f_flag_220 = 'X'.
+      IF r_mobile = 'X'.
+        IF amount <= 1000 .
+          discount = 5.
+        ELSEIF amount > 1000.
+          discount = 10.
+        ENDIF.
+      ELSEIF r_dth = 'X'.
+        IF amount BETWEEN 300 AND 1000 .
+          discount = 5.
+        ELSEIF amount > 1000.
+          discount = 10.
+        ENDIF.
+      ELSEIF r_purchase_bill = 'X'.
+        IF amount BETWEEN 1500 AND 5000 .
+          discount = 10.
+        ELSEIF amount > 5000.
+          discount = 25.
+        ENDIF.
+
+
+      ENDIF.
+      PERFORM F012-find_discount USING amount discount CHANGING
+io_cal_amt.
+    ENDIF.
+  ENDIF.
+ENDMODULE.                 " INIT_220  OUTPUT

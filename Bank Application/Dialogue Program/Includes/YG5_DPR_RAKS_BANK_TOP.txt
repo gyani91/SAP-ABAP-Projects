@@ -1,0 +1,101 @@
+
+**************************************************
+* Author's name         : Mohit Bhatt
+*	                        Nipun Batra
+*                         Abhijeet Majumdar
+*                         Sumeet Gyanchandani
+* Date written          :	03-Mar-2015
+* Program description	  : Data  for RAK Bank Application
+**************************************************
+* Modification #        :
+* Date of modification  :
+* Programmer            :
+* Description           :
+**************************************************
+*&---------------------------------------------------------------------*
+*& INCLUDE YG5_DPR_RAKS_BANK_TOP                             MODULE POOL
+*& YG5_DPR_RAKS_BANK
+*&
+*&---------------------------------------------------------------------*
+
+PROGRAM  yg5_dpr_raks_bank.
+
+* DECLARATION OF CUSTOM TRANSPARENT TABLES.
+
+TABLES: yg5_customers, " TO CREATE WORK AREAS CUSTOMRES TABLES
+  yg5_account, " TO CREATE WORK AREAS ACCOUT TABLES
+  yg5_balance,  " TO CREATE WORK AREAS BALANCE TABLES
+  yg5_service,  " TO CREATE WORK AREAS SERVICE TABLES
+  yg5_transaction.  " TO CREATE WORK AREAS TRANSCATION TABLES
+
+
+* DECLARATION OF CONSTANTS.
+
+CONSTANTS:
+BEGIN OF gc_savings,        "DECLARATION OF SAVING DETAILS.
+  minbal TYPE yg5_balance-balance VALUE 10000,
+  account_type TYPE yg5_account-account_type VALUE 'S',
+END OF gc_savings,
+
+BEGIN OF gc_current,        "DECLARATION OF CURRENT DETAILS.
+  minbal TYPE yg5_balance-balance VALUE 5000,
+  account_type TYPE yg5_account-account_type VALUE 'C',
+END OF gc_current.
+
+
+"""""""""""""" START OF DATA DECLARATION """"""""""""""""""""""""""""""
+
+* DECLARATION OF WORK VARIABLES.
+
+DATA: ok_code_100 TYPE sy-ucomm, "OK CODE FOR SCREEN 100
+      ok_code_200 TYPE sy-ucomm,"OK CODE FOR SCREEN 200
+      ok_code_300 TYPE sy-ucomm,"OK CODE FOR SCREEN 300
+
+      r_car VALUE 'X', " RADIO BUTTON FOR SCREEN 210
+      r_home,           " RADIO BUTTON FOR SCREEN 210
+      r_personal,        " RADIO BUTTON FOR SCREEN 210
+
+      r_mobile VALUE 'X',        " RADIO BUTTON FOR SCREEN 220
+      r_dth,        " RADIO BUTTON FOR SCREEN 220
+      r_purchase_bill,        " RADIO BUTTON FOR SCREEN 220
+
+      io_mea TYPE yg5_balance-balance,  "I/O BOX SCR 210
+      io_cal_amt TYPE yg5_balance-balance,  "I/O BOX SCR 210
+      io_loan_category(20),  "I/O BOX SCR 210
+
+      io_from TYPE sy-datum, " I/O FIELDS
+      io_to TYPE sy-datum, " I/O FIELDS
+      io_selected_text(16),  " I/O FIELDS
+      IO_MOB_DTH_PBILL(16) TYPE N,  "I/O FIELDS
+      "VAR TO CALCULATING DEBIT AMOUNT
+      v_tot_debitamt TYPE yg5_transaction-amount,
+
+      amount TYPE yg5_transaction-amount, " I/O FIELDS
+      discount TYPE i,   " I/O FIELDS
+      final_amount TYPE yg5_transaction-amount, " I/O FIELDS
+
+
+      v_days TYPE sy-datum, " TEMP VAR FOR 3 MONTHS VERIFICATION
+      flag_300 TYPE i,tran_type, " FLAG FOR SCREEN 300
+      v_stype TYPE yg5_service-service_type,  " TO IDENTIFY TRAN_TYPE
+      f_flag_220, " FLAG FOR SCREEN 220
+
+      " VAR TO STORE DESCRIPTION
+      v_remark_desc TYPE yg5_transaction-tran_desc.
+*      io_mob_dth_pbill(15) TYPE n.
+
+
+"DECLARATION OF INTERNAL TABLES.
+DATA: gt_transaction_details TYPE STANDARD TABLE OF yg5_transaction,
+
+      BEGIN OF gt_cust_acnts OCCURS 0,
+      account_no LIKE yg5_account-account_no,
+      END OF gt_cust_acnts.
+
+"DECLARATION OF WORK AREAS.
+DATA gw_transaction_details LIKE yg5_transaction.
+
+CONTROLS: tb_200 TYPE TABSTRIP, " TABLE STRIP FOR SCREE 200
+tc_300 TYPE TABLEVIEW USING SCREEN 300. " TABLE CONTORL, SCR 300
+
+"""""""""""""" END OF DATA DECLARATION """"""""""""""""""""""""""""""""

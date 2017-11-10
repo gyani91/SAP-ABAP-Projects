@@ -1,0 +1,83 @@
+*&---------------------------------------------------------------------*
+*&  Include           ZPRO_BAPI_FLIGHT_F01
+*&---------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*&      Form  GET_SEAT_AVAILABILITY
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM get_seat_availability .
+
+  CALL FUNCTION 'BAPI_FLIGHT_CHECKAVAILIBILITY'
+    EXPORTING
+      airlineid          = gw_fl-airlineid
+      connectionid       = gw_fl-connectid
+      flightdate         = gw_fl-flightdate
+   IMPORTING
+     AVAILIBILITY       = wa_availability
+*   TABLES
+*     RETURN             =
+            .
+
+  write:/1 'Airline', 15':', 18 gw_fl-airlineid.
+  write:/1 'Connection Id', 15':', 18 gw_fl-connectid.
+  write:/1 'Flight Date', 15':', 18 gw_fl-flightdate.
+  uline.
+
+  write : /4 'Business class', 25 'Economy class', 45 'First class'.
+  write : /4 wa_availability-businfree, 25 wa_availability-econofree,
+          45 wa_availability-firstfree.
+
+ENDFORM.                    " GET_SEAT_AVAILABILITY
+*&---------------------------------------------------------------------*
+*&      Form  GET_FLIGHT_DETAILS
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM get_flight_details .
+  s_from-city = p_from.
+  s_to-city = p_to.
+
+
+  CALL FUNCTION 'BAPI_FLIGHT_GETLIST'
+    EXPORTING
+      airline          = p_al
+      destination_from = s_from
+      destination_to   = s_to
+*     MAX_ROWS         =
+    TABLES
+      date_range       = so_date
+*     EXTENSION_IN     =
+      flight_list      = gt_fl
+*     EXTENSION_OUT    =
+*     RETURN           =
+    .
+ENDFORM.                    " GET_FLIGHT_DETAILS
+*&---------------------------------------------------------------------*
+*&      Form  DISPLAY_FLIGHT_DETAILS
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM display_flight_details .
+  uline.
+  write: / 'Flight From:', p_from.
+  write: / 'Flight To  :', p_to.
+  uline.
+
+  WRITE:/1 'Airline', 20 'Connection Id',
+    35 'Flight Date', 50 'Departure Time'.
+  LOOP AT gt_fl INTO gw_fl.
+    WRITE: /1 gw_fl-airline, 20 gw_fl-connectid,
+    35 gw_fl-flightdate, 50 gw_fl-deptime.
+    hide: gw_fl-airlineid, gw_fl-connectid, gw_fl-flightdate.
+  ENDLOOP.
+ENDFORM.                    " DISPLAY_FLIGHT_DETAILS

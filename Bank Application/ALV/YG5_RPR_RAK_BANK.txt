@@ -1,0 +1,38 @@
+**************************************************
+* Author's name         : Mohit Bhatt
+*	                        Nipun Batra
+*                         Abhijeet Majumdar
+*                         Sumeet Gyanchandani
+* Date written          :	03-Mar-2015
+* Program description	  : Program for displaying ALV
+**************************************************
+* Modification #        :
+* Date of modification  :
+* Programmer            :
+* Description           :
+**************************************************
+
+REPORT  YG5_RPR_RAK_BANK.
+
+************** START OF INCLUDES ************************************
+
+INCLUDE YG5_RPR_RAK_BANK_TOP. "INCLUDE FOR DATA DECLARATION
+
+INCLUDE YG5_RPR_RAK_BANK_F01. "INCLUDE FOR SUBROUTINE DEFINITIONS
+
+************** END OF INCLUDES ************************************
+
+
+************** START OF MAIN LOGIC ************************************
+
+START-OF-SELECTION. "REPORT PROGRAM EVENT - AFTER SELECTION-SCREEN IF EXECUTED
+  PERFORM F000-FETCH_DATA. "Fetching Account Details for Summary
+  PERFORM F001-FILL_KEYINFO. "Subroutine to implement keyinfo workarea
+  PERFORM F002-FILL_FIELD_CATALOG. "Subroutine to implement fieldcatalog workarea
+  PERFORM F003-FILL_EVENT. "Subroutine to implement events workarea
+  PERFORM F004-FILL_LAYOUT. "Subroutine for fill layout
+
+END-OF-SELECTION. "REPORT PROGRAM EVENT - AFTER FETCHING AND PROCESSING OF DATA
+  PERFORM F005-DISPLAY_HIERARCHY. "Subroutine for hierachical ALV display
+
+************** END OF MAIN LOGIC ************************************

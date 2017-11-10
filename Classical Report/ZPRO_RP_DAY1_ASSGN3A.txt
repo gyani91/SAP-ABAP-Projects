@@ -1,0 +1,35 @@
+*&---------------------------------------------------------------------*
+*& Report  ZPRO_RP_DAY1_ASSGN3A
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+REPORT  zpro_rp_day1_assgn3a.
+
+INCLUDE zpro_rp_day1_assgn3a_top.
+
+INCLUDE zpro_rp_day1_assgn3a_scr.
+
+INCLUDE zpro_rp_day1_assgn3a_f01.
+
+
+INITIALIZATION.
+  PERFORM init.
+
+AT SELECTION-SCREEN.
+  PERFORM select_scr.
+
+AT SELECTION-SCREEN ON p_uid.
+  PERFORM validate_uid.
+
+START-OF-SELECTION.
+  PERFORM data_fetch.
+  PERFORM data_process.
+
+END-OF-SELECTION.
+  PERFORM data_display.
+
+AT LINE-SELECTION.
+  PERFORM secondary_list.
