@@ -1,0 +1,583 @@
+*&---------------------------------------------------------------------*
+*&  Include           MZ5255_SHOPEASY_MGMT2I01
+*&---------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*&      Module  VALIDATE  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE validate INPUT.
+  flag100 = 0.
+  IF ok_code = 'FC_LOGIN'.
+    SELECT SINGLE * FROM z55_user INTO gw_user WHERE userid = z55_user-userid AND usertype  = z55_user-usertype.
+    IF sy-subrc <> 0.
+      MESSAGE 'THIS USERID DOES NOT EXISTS' TYPE 'E'.
+    ELSE .
+      SELECT SINGLE * FROM z55_user INTO gw_user WHERE userid = z55_user-userid
+         AND usertype  = z55_user-usertype
+         AND password = z55_user-password.
+      IF sy-subrc <> 0.
+        MESSAGE 'INCORRECT PASSWORD' TYPE 'E'.
+
+      ELSE.
+        MESSAGE 'LOGIN SUCCESSFUL' TYPE 'S'.
+        flag100 = 1.
+      ENDIF.
+
+    ENDIF.
+  ENDIF.
+
+ENDMODULE.                 " VALIDATE  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0100  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0100 INPUT.
+
+ENDMODULE.                 " USER_COMMAND_0100  INPUT
+
+
+*----------------------------------------------------------------------*
+*  MODULE NEXT_SCREEN INPUT
+*----------------------------------------------------------------------*
+*
+*----------------------------------------------------------------------*
+MODULE next_screen INPUT.
+  IF flag100 = 1.
+
+    IF gw_user-usertype =  'A'.
+      CALL SCREEN 0200.
+    ELSEIF  gw_user-usertype =  'U'.
+      CALL SCREEN 0300.
+    ENDIF.
+
+  ENDIF.
+ENDMODULE.                    "NEXT_SCREEN INPUT
+*&---------------------------------------------------------------------*
+*&      Module  NEXT_SCREEN  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+" NEXT_SCREEN  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_100  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_100 INPUT.
+  IF ok_code = 'FC_EXIT'.
+    CALL FUNCTION 'POPUP_TO_CONFIRM'
+      EXPORTING
+*     TITLEBAR                    = ' '
+*     DIAGNOSE_OBJECT             = ' '
+        text_question               = 'THE CHANGES MADE BY YOU WILL BE LOST DO YOU WANT TO LEAVE??'
+*     TEXT_BUTTON_1               = '
+*     ICON_BUTTON_1               = ' '
+*     TEXT_BUTTON_2               = 'Nein'(002)
+*     ICON_BUTTON_2               = ' '
+*     DEFAULT_BUTTON              = '1'
+*     DISPLAY_CANCEL_BUTTON       = 'X'
+*     USERDEFINED_F1_HELP         = ' '
+*     START_COLUMN                = 25
+*     START_ROW                   = 6
+*     POPUP_TYPE                  =
+*     IV_QUICKINFO_BUTTON_1       = ' '
+*     IV_QUICKINFO_BUTTON_2       = ' '
+     IMPORTING
+       answer                      = var
+*   TABLES
+*     PARAMETER                   =
+*   EXCEPTIONS
+*     TEXT_NOT_FOUND              = 1
+*     OTHERS                      = 2
+              .
+    IF sy-subrc <> 0.
+* Implement suitable error handling here
+    ENDIF.
+
+    IF var  = '1'.
+      LEAVE PROGRAM.
+    ENDIF.
+  ENDIF.
+ENDMODULE.                 " USER_COMMAND_100  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0200  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0200 INPUT.
+  IF ok_code = 'FC_EXIT'.
+    CALL FUNCTION 'POPUP_TO_CONFIRM'
+      EXPORTING
+*     TITLEBAR                    = ' '
+*     DIAGNOSE_OBJECT             = ' '
+        text_question               = 'THE CHANGES MADE BY YOU WILL BE LOST DO YOU WANT TO LEAVE??'
+*     TEXT_BUTTON_1               = '
+*     ICON_BUTTON_1               = ' '
+*     TEXT_BUTTON_2               = 'Nein'(002)
+*     ICON_BUTTON_2               = ' '
+*     DEFAULT_BUTTON              = '1'
+*     DISPLAY_CANCEL_BUTTON       = 'X'
+*     USERDEFINED_F1_HELP         = ' '
+*     START_COLUMN                = 25
+*     START_ROW                   = 6
+*     POPUP_TYPE                  =
+*     IV_QUICKINFO_BUTTON_1       = ' '
+*     IV_QUICKINFO_BUTTON_2       = ' '
+     IMPORTING
+       answer                      = var
+*   TABLES
+*     PARAMETER                   =
+*   EXCEPTIONS
+*     TEXT_NOT_FOUND              = 1
+*     OTHERS                      = 2
+              .
+    IF sy-subrc <> 0.
+* Implement suitable error handling here
+    ENDIF.
+
+    IF var  = '1'.
+      LEAVE PROGRAM.
+    ENDIF.
+  ENDIF.
+  IF ok_code = 'FC_EXIT'.
+    LEAVE PROGRAM.
+  ELSEIF ok_code  = 'FC_BACK'.
+*    LEAVE TO SCREEN 0.
+  ELSEIF ok_code  = 'FC_CLEAR'.
+    LEAVE SCREEN.
+  ENDIF.
+ENDMODULE.                 " USER_COMMAND_0200  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0300  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0300 INPUT.
+  IF ok_code = 'FC_EXIT'.
+    LEAVE PROGRAM.
+  ELSEIF ok_code  = 'FC_BACK'.
+    LEAVE TO SCREEN 0.
+  ELSEIF ok_code  = 'FC_CLEAR'.
+    LEAVE SCREEN.
+
+  ENDIF.
+ENDMODULE.                 " USER_COMMAND_0300  INPUT
+
+
+*&---------------------------------------------------------------------*
+*&      Module  F1_USERID  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE f1_userid INPUT.
+  CALL FUNCTION 'HELP_OBJECT_SHOW_FOR_FIELD'
+   EXPORTING
+*     DOKLANGU                            = SY-LANGU
+*     DOKTITLE                            = ' '
+*     CALLED_BY_TCODE                     =
+*     CALLED_BY_PROGRAM                   =
+*     CALLED_BY_DYNP                      =
+      called_for_tab                      =  'Z55_USER'
+       called_for_field                   =  'USERID'
+*     CALLED_FOR_TAB_FLD_BTCH_INPUT       =
+*     CALLED_BY_CUAPROG                   =
+*     CALLED_BY_CUASTAT                   =
+*     MERGE_DZ_IF_AVAILABLE               =
+*     MEMORYID                            =
+*     EXPLICIT_MEMORYID                   = ' '
+*   TABLES
+*     LINKS                               =
+*     EXCLUDEFUN                          =
+*   EXCEPTIONS
+*     OBJECT_NOT_FOUND                    = 1
+*     SAPSCRIPT_ERROR                     = 2
+*     OTHERS                              = 3
+            .
+  IF sy-subrc <> 0.
+* Implement suitable error handling here
+  ENDIF.
+
+
+ENDMODULE.                 " F1_USERID  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  F1_USERTYPE  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE f1_usertype INPUT.
+  CALL FUNCTION 'HELP_OBJECT_SHOW_FOR_FIELD'
+   EXPORTING
+*     DOKLANGU                            = SY-LANGU
+*     DOKTITLE                            = ' '
+*     CALLED_BY_TCODE                     =
+*     CALLED_BY_PROGRAM                   =
+*     CALLED_BY_DYNP                      =
+      called_for_tab                      =  'Z55_USER'
+       called_for_field                   =  'USERTYPE'
+*     CALLED_FOR_TAB_FLD_BTCH_INPUT       =
+*     CALLED_BY_CUAPROG                   =
+*     CALLED_BY_CUASTAT                   =
+*     MERGE_DZ_IF_AVAILABLE               =
+*     MEMORYID                            =
+*     EXPLICIT_MEMORYID                   = ' '
+*   TABLES
+*     LINKS                               =
+*     EXCLUDEFUN                          =
+*   EXCEPTIONS
+*     OBJECT_NOT_FOUND                    = 1
+*     SAPSCRIPT_ERROR                     = 2
+*     OTHERS                              = 3
+            .
+  IF sy-subrc <> 0.
+* Implement suitable error handling here
+  ENDIF.
+
+ENDMODULE.                 " F1_USERTYPE  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  F1_PASSWORD  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE f1_password INPUT.
+  CALL FUNCTION 'HELP_OBJECT_SHOW_FOR_FIELD'
+   EXPORTING
+*     DOKLANGU                            = SY-LANGU
+*     DOKTITLE                            = ' '
+*     CALLED_BY_TCODE                     =
+*     CALLED_BY_PROGRAM                   =
+*     CALLED_BY_DYNP                      =
+      called_for_tab                      =  'Z55_USER'
+       called_for_field                   =  'PASSWORD'
+*     CALLED_FOR_TAB_FLD_BTCH_INPUT       =
+*     CALLED_BY_CUAPROG                   =
+*     CALLED_BY_CUASTAT                   =
+*     MERGE_DZ_IF_AVAILABLE               =
+*     MEMORYID                            =
+*     EXPLICIT_MEMORYID                   = ' '
+*   TABLES
+*     LINKS                               =
+*     EXCLUDEFUN                          =
+*   EXCEPTIONS
+*     OBJECT_NOT_FOUND                    = 1
+*     SAPSCRIPT_ERROR                     = 2
+*     OTHERS                              = 3
+            .
+  IF sy-subrc <> 0.
+* Implement suitable error handling here
+  ENDIF.
+
+ENDMODULE.                 " F1_PASSWORD  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  F4_USERID_100  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE f4_userid_100 INPUT.
+
+ENDMODULE.                 " F4_USERID_100  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  F4_USERTYPE_100  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE f4_usertype_100 INPUT.
+
+ENDMODULE.                 " F4_USERTYPE_100  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  F4_PASSWORD_100  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE f4_password_100 INPUT.
+
+ENDMODULE.                 " F4_PASSWORD_100  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0220  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0220 INPUT.
+  IF ok_code = 'FC_ENTER'.
+    SELECT SINGLE * FROM z55_product INTO gw_product WHERE pr_code = z55_product-pr_code.
+    IF sy-subrc <> 0.
+      MESSAGE 'PR CODE NOT FOUND' TYPE 'I'.
+      CLEAR z55_product.
+    ELSE .
+      z55_product = gw_product.
+    ENDIF.
+  ELSEIF ok_code = 'FC_SAVE'.
+    flag_pr_220 = 0.
+    SELECT SINGLE * FROM z55_product INTO gw_product WHERE pr_code = z55_product-pr_code.
+    IF sy-subrc = 0.
+      flag_pr_220 = 1.
+    ENDIF.
+
+  ENDIF.
+
+
+ENDMODULE.                 " USER_COMMAND_0220  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  F4_PR_CODE_220  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE f4_pr_code_220 INPUT.
+
+
+ENDMODULE.                 " F4_PR_CODE_220  INPUT
+*&---------------------------------------------------------------------*
+*&      Form  VALIDATION
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+" VALIDATION
+*&---------------------------------------------------------------------*
+*&      Module  VALIDATION  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE validation INPUT.
+  IF ok_code = 'FC_SAVE'.
+    IF z55_product-description IS INITIAL.
+      MESSAGE 'FILL DESCRIPTION' TYPE 'E'.
+    ELSE.
+      IF z55_product-price = 0.
+        MESSAGE 'FILL PRICE' TYPE 'E'.
+      ELSE.
+        IF z55_product-uom IS INITIAL.
+          MESSAGE 'FILL UNIT' TYPE 'E'.
+        ELSE.
+          PERFORM save_220.
+        ENDIF.
+      ENDIF.
+    ENDIF.
+
+  ENDIF.
+
+ENDMODULE.                 " VALIDATION  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0230  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0230 INPUT.
+  IF ok_code = 'FC_PRIV_CUST'.
+    IF privileged_customer = 'X'.
+      v_flag = 1.
+
+      SELECT SINGLE * FROM z55_card1 INTO z55_card1 WHERE userid = z55_user-userid.
+      IF sy-subrc <> 0.
+        SELECT MAX( card_no ) FROM z55_card1 INTO v_card_no.
+        z55_card1-card_no = v_card_no + 1.
+
+      ENDIF.
+    ELSEIF  privileged_customer = ' '.
+      v_flag = 0.
+    ENDIF.
+*  ELSEIF ok_code = 'FC_ENTER'.
+*    SELECT SINGLE * FROM z55_user INTO z55_user WHERE userid = z55_user-userid." AND USERTYPE = 'C'.
+*      IF sy-subrc <> 0.
+*        MESSAGE 'THIS USERID DOES NOT EXIST IN DATABASE'  TYPE 'E'.
+*      ELSE.
+*        SELECT SINGLE * FROM z55_user INTO z55_user WHERE userid = z55_user-userid AND usertype = 'C'.
+*          IF sy-subrc <> 0.
+*            MESSAGE 'THIS USERID IS ALREADY IN USE'  TYPE 'E'.
+*          ENDIF.
+*        ENDIF.
+
+  ENDIF.
+
+ENDMODULE.                 " USER_COMMAND_0230  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  VALIDATE_2301  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE validate_2301 INPUT.
+  flag_save = 0.
+  f_new_user = 0.
+  IF ok_code = 'FC_ENTER'.
+    CLEAR z55_user-username.
+    SELECT SINGLE * FROM z55_user INTO gw_user WHERE userid = z55_user-userid." AND USERTYPE = 'C'.
+    IF sy-subrc <> 0.
+      f_new_user = 1.
+      MESSAGE 'THIS USERID DOES NOT EXIST IN DATABASE'  TYPE 'I'.
+
+    ELSE.
+      SELECT SINGLE * FROM z55_user INTO gw_user WHERE userid = z55_user-userid AND usertype = 'C'.
+      IF sy-subrc <> 0.
+        MESSAGE 'THIS USERID IS ALREADY IN USE'  TYPE 'E'.
+
+      ELSE.
+        z55_user = gw_user.
+
+      ENDIF.
+    ENDIF.
+  ELSEIF ok_code = 'FC_SAVE'.
+    flag_save = 1.
+    SELECT SINGLE * FROM z55_user INTO gw_user WHERE userid = z55_user-userid." AND USERTYPE = 'C'.
+    IF sy-subrc <> 0.
+      f_new_user = 1.
+    ENDIF.
+  ENDIF.
+ENDMODULE.                 " VALIDATE_2301  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_230  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_230 INPUT.
+  IF ok_code  = 'FC_BACK'.
+    LEAVE TO SCREEN 0.
+
+  ENDIF.
+ENDMODULE.                 " USER_COMMAND_230  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  VALIDATE_2302  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE validate_2302 INPUT.
+  IF flag_save = 1.
+    IF z55_card1-expiry_date < sy-datum.
+      MESSAGE 'DATE SHOULD BE GREATER THAN CURRENT DATE' TYPE 'E'.
+    ELSE.
+      IF z55_card1-discount <= 0.
+        MESSAGE 'DISCOUNT SHOULD BE GREATER THAN 0' TYPE 'E'.
+      ELSE.
+
+        PERFORM save.
+      ENDIF.
+    ENDIF.
+  ENDIF.
+ENDMODULE.                 " VALIDATE_2302  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0250  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0250 INPUT.
+
+  IF ok_code = 'FC_ENTER'.
+    PERFORM data_fetch_250.
+  ENDIF.
+
+
+
+ENDMODULE.                 " USER_COMMAND_0250  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  VALIDATE_PID_250  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE validate_pid_250 INPUT.
+  flag_clr  = 1.
+  SELECT SINGLE * FROM z55_purchase INTO z55_purchase WHERE purchaseid = z55_purchase-purchaseid.
+  IF sy-subrc <> 0.
+    flag_clr  = 0.
+  ENDIF.
+ENDMODULE.                 " VALIDATE_PID_250  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0310  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0310 INPUT.
+*  flag_pc_310  = 0.
+  IF ok_code = 'FC_PRIV_CUST310'.
+    IF privileged_customer = 'X'.
+      PERFORM card_data.
+    ELSEIF privileged_customer = ' '.
+      flag_pc_310  = 0.
+    ENDIF.
+  ELSEIF ok_code = 'FC_ENTER'.
+    PERFORM calculate.
+  ELSEIF ok_code = 'FC_DELETE'.
+    PERFORM delete_rows.
+    PERFORM set.
+  ELSEIF ok_code = 'FC_OK'.
+    PERFORM save_310.
+  ELSEIF ok_code = 'FC_SAVE'.
+
+*    INSERT z55_purchase FROM z55_purchase.
+*    IF SY-subrc = 0  .
+       flag_save_dis = 1.
+    PERFORM  save_int_310.
+*    ENDIF.
+
+*       LOOP AT SCREEN.
+*    IF SCREEN-NAME = 'TABLE_CONTROL_310' OR  SCREEN-NAME = 'Z55_PUR_PRO_ITEM-PR_CODE'.
+*      SCREEN-input = 0.
+*      MODIFY SCREEN.
+*      ENDIF.
+*    ENDLOOP.
+*      PERFORM SAVE_INT_310.
+  ENDIF.
+
+ENDMODULE.                 " USER_COMMAND_0310  INPUT
+*&---------------------------------------------------------------------*
+*&      Form  CARD_DATA
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM card_data .
+  SELECT SINGLE * FROM z55_card1 INTO z55_card1 WHERE userid = z55_purchase-userid AND card_type = 'P'.
+  IF sy-subrc <> 0.
+    MESSAGE 'THE CUSTOMR K PAS PRIVILG WALA CARD NAHI HAI.' TYPE 'I'.
+    privileged_customer = ' '.
+  ELSE .
+    flag_pc_310  = 1.
+  ENDIF.
+ENDFORM.                    " CARD_DATA
+*&---------------------------------------------------------------------*
+*&      Module  VALID_PURCHASE_310  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE valid_purchase_310 INPUT.
+  SELECT SINGLE * FROM z55_purchase WHERE purchaseid = z55_purchase-purchaseid.
+  IF sy-subrc <> 0.
+    MESSAGE 'enter valid purchaseid' TYPE 'E'.
+  ENDIF.
+ENDMODULE.                 " VALID_PURCHASE_310  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  MODIFY_GT  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE modify_gt INPUT.
+*  IF z55_pur_pro_item IS NOT INITIAL.
+    MODIFY gt_out FROM z55_pur_pro_item INDEX table_control_310-current_line.
+*    IF OK_CODE = 'FC_SAVE'.
+*        MOVE-CORRESPONDING z55_pur_pro_item TO gw_pi.
+*        MOVE-CORRESPONDING z55_purchase TO   gw_pi.
+*
+*        INSERT z55_purchase_ite FROM gw_pi.
+*        IF SY-subrc <> 0.
+*          flag_save_dis = 2.
+*          EXIT.
+*        ENDIF.
+*            CLEAR gw_pi.
+*       ENDIF.
+*  ENDIF.
+ENDMODULE.                 " MODIFY_GT  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  EXIT_310  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE exit_310 INPUT.
+  IF ok_code = 'FC_EXIT'.
+    LEAVE PROGRAM.
+
+
+  ENDIF.
+ENDMODULE.                 " EXIT_310  INPUT

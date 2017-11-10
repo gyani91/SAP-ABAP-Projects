@@ -1,0 +1,11 @@
+*&---------------------------------------------------------------------*
+*&  Include           Y681793_ISSUE_DET_SCR
+*&---------------------------------------------------------------------*
+
+" Creating Selection Screen
+SELECTION-SCREEN BEGIN OF SCREEN 0101.
+SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME TITLE text-001.
+SELECT-OPTIONS: so_bid FOR bid OBLIGATORY NO-EXTENSION.
+SELECT-OPTIONS: so_date FOR date NO-EXTENSION.
+SELECTION-SCREEN END OF BLOCK b1.
+SELECTION-SCREEN END OF SCREEN 0101.

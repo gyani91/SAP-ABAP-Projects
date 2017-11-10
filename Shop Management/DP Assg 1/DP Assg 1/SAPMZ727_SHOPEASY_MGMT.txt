@@ -1,0 +1,14 @@
+*&---------------------------------------------------------------------*
+*& Module   Pool       SAPMZ727_SHOPEASY_MGMT
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+
+INCLUDE MZ727_SHOPEASY_MGMTTOP                  .    " global Data
+
+INCLUDE MZ727_SHOPEASY_MGMTO01                  .  " PBO-Modules
+INCLUDE MZ727_SHOPEASY_MGMTI01                  .  " PAI-Modules
+* INCLUDE MZ727_SHOPEASY_MGMTF01                  .  " FORM-Routines

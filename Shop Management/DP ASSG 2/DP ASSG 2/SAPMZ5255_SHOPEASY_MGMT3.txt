@@ -1,0 +1,18 @@
+*&---------------------------------------------------------------------*
+*& Module Pool       SAPMZ5255_SHOPEASY_MGMT2
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+
+INCLUDE MZ5255_SHOPEASY_MGMT3TOP.
+*INCLUDE MZ5255_SHOPEASY_MGMT2TOP                .    " global Data
+
+INCLUDE MZ5255_SHOPEASY_MGMT3O01.
+* INCLUDE MZ5255_SHOPEASY_MGMT2O01                .  " PBO-Modules
+INCLUDE MZ5255_SHOPEASY_MGMT3I01.
+* INCLUDE MZ5255_SHOPEASY_MGMT2I01                .  " PAI-Modules
+INCLUDE MZ5255_SHOPEASY_MGMT3F01.
+* INCLUDE MZ5255_SHOPEASY_MGMT2F01                .  " FORM-Routines

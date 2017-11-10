@@ -1,0 +1,33 @@
+*&---------------------------------------------------------------------*
+*&  Include           ZPRO_F01
+*&---------------------------------------------------------------------*
+CLASS cl_po_create IMPLEMENTATION.
+  METHOD constructor.
+    IF i_autogen_pid = 'X'.
+      ADD 1 TO pidctr.
+      CONCATENATE 'PD' pidctr INTO purchaseid.
+    ENDIF.
+  ENDMETHOD.                    "constructor
+  METHOD set_details.
+    po_header = is_header.
+    po_item = it_item.
+  ENDMETHOD.                    "set_details
+  METHOD save.
+    INSERT ymb_purchase FROM po_header.
+    IF sy-subrc = 0.
+      subrc = 0.
+      INSERT ymb_purchase_ite FROM TABLE po_item.
+      IF  sy-subrc = 0.
+        subrc = 0.
+      ELSE.
+        subrc = 4.
+      ENDIF.
+    ELSE.
+      subrc = 4.
+    ENDIF.
+  ENDMETHOD.      "constructor
+
+METHOD getrc.
+  e_subrc = subrc.
+  ENDMETHOD.
+ENDCLASS.                    "cl_po_create IMPLEMENTATION

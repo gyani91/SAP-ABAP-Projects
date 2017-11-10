@@ -1,0 +1,75 @@
+*&---------------------------------------------------------------------*
+*& Include MZ93_DEMO_OOPSTOP                                 Module Pool      SAPMZ93_DEMO_OOPS
+*&
+*&---------------------------------------------------------------------*
+
+PROGRAM  SAPMZ93_DEMO_OOPS.
+data  OK_CODE type sy-ucomm.
+tables: z681797_user.
+CLASS USER DEFINITION.
+
+  PUBLIC SECTION.
+  METHODS CONSTRUCTOR.
+  METHODS SET
+  IMPORTING
+     !set_user type z681797_user.
+  methods save.
+
+  METHODS GET
+  EXPORTING
+    !GET_USERID TYPE Z681797_USER-USERID.
+  PROTECTED SECTION.
+
+  DATA gw_user TYPE z681797_user.
+
+  PRIVATE SECTION.
+    DATA USERID TYPE Z681797_USER-USERID.
+ENDCLASS.
+
+CLASS user IMPLEMENTATION.
+  METHOD CONSTRUCTOR.
+    DATA V_AG TYPE Z681797_USER-USERID.
+    SELECT MAX( USERID ) FROM Z681797_USER INTO V_AG.
+      V_AG = V_AG + 1.
+    USERID = V_AG.
+  ENDMETHOD.
+
+  METHOD GET.
+    GET_USERID = USERID.
+  ENDMETHOD.
+
+  METHOD set.
+    gw_user = set_user.
+  ENDMETHOD.
+
+  METHOD save.
+    INSERT z681797_user FROM gw_user.
+    IF sy-subrc = 0.
+      MESSAGE 'Data inserted' TYPE 'S'.
+    ELSE.
+      MESSAGE 'Data not inserted' TYPE 'E'.
+    ENDIF.
+  ENDMETHOD.
+ENDCLASS.
+  DATA obj TYPE REF TO user.
+
+
+CLASS user_modify DEFINITION INHERITING FROM user.
+  PUBLIC SECTION.
+    METHODs save REDEFINITION.
+  PROTECTED SECTION.
+  PRIVATE SECTION.
+ENDCLASS.
+
+CLASS user_modify IMPLEMENTATION.
+  METHOD save.
+    MODIFY z681797_user from gw_user.
+    IF sy-subrc = 0.
+      MESSAGE 'Data Modified' TYPE 'S'.
+    ELSE.
+      MESSAGE 'Data not modified' TYPE 'E'.
+    ENDIF.
+   ENDMETHOD.
+ENDCLASS.
+
+DATA obj_modify TYPE REF TO user_modify.

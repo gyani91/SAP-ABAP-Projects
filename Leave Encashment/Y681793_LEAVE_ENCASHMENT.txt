@@ -1,0 +1,24 @@
+*&---------------------------------------------------------------------*
+*& Report  Y681793_LEAVE_ENCASHMENT
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+REPORT  y681793_leave_encashment.
+
+
+
+INCLUDE y681793_leave_encashment_top.
+
+START-OF-SELECTION.
+
+
+  PERFORM select_queries.
+
+  PERFORM processing.
+
+  PERFORM display.
+
+  INCLUDE y681793_leave_encashment_f01.

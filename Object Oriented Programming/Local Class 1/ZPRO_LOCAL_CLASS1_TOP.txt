@@ -1,0 +1,33 @@
+*&---------------------------------------------------------------------*
+*&  Include           ZPRO_LOCAL_CLASS1_TOP
+*&---------------------------------------------------------------------*
+
+CLASS lc_emp DEFINITION.
+  PUBLIC SECTION.
+    METHODS: set_empid IMPORTING empid TYPE i,
+             get_empid EXPORTING empid TYPE i.
+
+  PROTECTED SECTION.
+  PRIVATE SECTION.
+    DATA empid TYPE i.
+    DATA empname TYPE char20.
+
+ENDCLASS.                    "a DEFINITION
+
+*----------------------------------------------------------------------*
+*       CLASS a IMPLEMENTATION
+*----------------------------------------------------------------------*
+*
+*----------------------------------------------------------------------*
+CLASS lc_emp IMPLEMENTATION.
+  METHOD get_empid.
+    empid = me->empid.
+  ENDMETHOD.
+
+  METHOD set_empid.
+    me->empid = empid.
+  ENDMETHOD.
+
+ENDCLASS.                    "a IMPLEMENTATION
+
+DATA emp_ref TYPE REF TO lc_emp.

@@ -1,0 +1,23 @@
+*&---------------------------------------------------------------------*
+*&  Include           MZ93_DEMO_OOPSO01
+*&---------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*&      Module  DISABLE  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+module DISABLE output.
+  create OBJECT: obj, OBJ_MODIFY.
+
+  IF sy-tcode = 'Z93_CREATE'.
+    CALL METHOD OBJ->GET
+      IMPORTING
+        GET_USERID = Z681797_USER-USERID.
+    LOOP AT SCREEN.
+      IF SCREEN-name = 'PB_DETAILS'.
+        SCREEN-input = 0.
+        MODIFY SCREEN.
+      ENDIF.
+     ENDLOOP.
+  ENDIF.
+endmodule.                 " DISABLE  OUTPUT

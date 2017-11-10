@@ -1,0 +1,52 @@
+*&---------------------------------------------------------------------*
+*&  Include           Y681793_ISSUE_DET_TOP
+*&---------------------------------------------------------------------*
+
+TYPE-POOLS: slis.
+
+TABLES: y681793_book_det, y681793_book_iss.
+
+
+DATA: v_count TYPE i.
+
+DATA: date TYPE y681793_book_iss-issue_date,
+      bid TYPE y681793_book_iss-book_id.
+
+TYPES: BEGIN OF ls_output, "Local Structure Declaration for Output
+      book_id type y681793_book_det-book_id,
+      book_name type y681793_book_det-book_name,
+      author_name type y681793_book_det-author_name,
+      issue_date type y681793_book_iss-issue_date,
+      returned_date type y681793_book_iss-returned_date,
+      issued_to type y681793_book_iss-issued_to,
+      no_of_times type i,
+END OF ls_output.
+
+DATA: gt_output TYPE STANDARD TABLE OF ls_output,
+      "Internal table declaration using local strucuture
+      gw_output LIKE LINE OF gt_output.
+      "Work area declaration using internal table
+
+DATA: gt_det TYPE STANDARD TABLE OF y681793_book_det,
+      "Internal Table Declaration using DDIC table
+      gw_det LIKE LINE OF gt_det.
+      "Work area declaration using internal table
+
+DATA: gt_iss TYPE STANDARD TABLE OF y681793_book_iss,
+      "Internal Table Declaration using DDIC table
+      gw_iss LIKE LINE OF gt_iss.
+      "Work area declaration using internal table
+
+DATA: gt_events TYPE slis_t_event,
+      gw_events LIKE LINE OF gt_events.
+
+DATA: gt_header TYPE slis_t_listheader,
+      gw_header LIKE LINE OF gt_header.
+
+DATA:  gw_layout TYPE slis_layout_alv.
+
+DATA: gt_fcat TYPE slis_t_fieldcat_alv,
+      gw_fcat TYPE LINE OF slis_t_fieldcat_alv.
+
+DATA gt_sort TYPE slis_t_sortinfo_alv.
+DATA gw_sort LIKE LINE OF gt_sort.

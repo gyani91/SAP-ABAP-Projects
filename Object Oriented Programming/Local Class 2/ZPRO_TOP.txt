@@ -1,0 +1,36 @@
+*&---------------------------------------------------------------------*
+*&  Include           ZPRO_TOP
+*&---------------------------------------------------------------------*
+TYPES: ttype TYPE STANDARD TABLE OF ymb_purchase_ite.
+*----------------------------------------------------------------------*
+*       CLASS cl_po_create DEFINITION
+*----------------------------------------------------------------------*
+*
+*----------------------------------------------------------------------*
+CLASS cl_po_create DEFINITION.
+  PUBLIC SECTION.
+    METHODS:
+     set_details
+     IMPORTING
+       it_item TYPE ttype
+     is_header TYPE ymb_purchase,
+     save,
+     constructor
+      IMPORTING
+       i_autogen_pid TYPE c,
+
+      getrc
+       EXPORTING
+         e_subrc TYPE sy-subrc.
+
+
+  PROTECTED SECTION.
+    DATA po_item TYPE ttype.
+    DATA subrc TYPE sy-subrc.
+    DATA po_header TYPE ymb_purchase.
+  PRIVATE SECTION.
+    DATA  purchaseid TYPE ebeln.
+    CLASS-DATA pidctr(8) TYPE n.
+
+
+ENDCLASS.                    "cl_po_create DEFINITION

@@ -1,0 +1,39 @@
+*&---------------------------------------------------------------------*
+*& Report  ZPRO_LOCAL_CLASS3
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+REPORT  ZPRO_LOCAL_CLASS3.
+
+datA: se_ref type REF TO z93_cl_se,
+      emp_ref TYPE REF TO z93_cl_employee,
+      eid type i,
+      salary TYPE ansal.
+
+create OBJECT: se_ref.
+
+emp_ref = se_ref.
+
+emp_ref->set_empid( 10004 ).
+
+eid = emp_ref->get_empid( ).
+
+WRITE:/ eid.
+
+call METHOD emp_ref->get_empid
+RECEIVING empid = eid.
+
+WRITE:/ eid.
+
+emp_ref->calc_salary( ).
+CALL METHOD emp_ref->get_salary
+  IMPORTING
+    salary = salary
+    .
+
+skip 2.
+
+WRITE: / salary.

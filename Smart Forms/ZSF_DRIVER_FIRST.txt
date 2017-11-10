@@ -1,0 +1,24 @@
+*&---------------------------------------------------------------------*
+*& Report  ZSF_DRIVER_FIRST
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+REPORT  zsf_driver_first.
+
+INCLUDE zsf_driver_first_top.
+INCLUDE zsf_driver_first_scr.
+INCLUDE zsf_driver_first_form.
+
+INITIALIZATION.
+  PERFORM clear.
+
+START-OF-SELECTION.
+  PERFORM data_fetch.
+  PERFORM call_ssf_func_module.
+  PERFORM data_process.
+
+end-OF-SELECTION.
+  PERFORM call_smartform_func_module.

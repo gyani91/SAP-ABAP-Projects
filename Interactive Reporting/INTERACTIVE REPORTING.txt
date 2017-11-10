@@ -1,0 +1,371 @@
+REPORT  Y68192_FA2_ASS3 LINE-COUNT 37.
+
+INCLUDE Y68192_FA2_ASS3_TOP.
+INCLUDE Y68192_FA2_ASS3_SCR.
+INCLUDE Y68192_FA2_ASS3_F01.
+
+ INITIALIZATION.
+  PERFORM INIT.
+
+AT SELECTION-SCREEN.
+  PERFORM SEL_SCR.
+
+
+AT SELECTION-SCREEN ON USER_ID.
+  PERFORM SELECTION_SCREEN.
+
+START-OF-SELECTION.
+  PERFORM DATA_FETCH.
+  PERFORM DATA_PROCESS.
+  PERFORM DISPLAY.
+
+TOP-OF-PAGE.
+  PERFORM TOP.
+
+END-OF-PAGE.
+  PERFORM FOOT.
+
+AT LINE-SELECTION.
+  PERFORM SECONDARY_LIST.
+
+
+
+*&---------------------------------------------------------------------*
+*&  Include           Y68192_FA2_ASS3_TOP
+*&---------------------------------------------------------------------*
+
+
+"Include Top
+
+DATA: IT_PURCHASE TYPE STANDARD TABLE OF Z68192_PURCHASE,
+      WA_PURCHASE LIKE LINE OF IT_PURCHASE,
+      IT_PUR_ITEM TYPE STANDARD TABLE OF Z68192_PUR_ITEM,
+      WA_PUR_ITEM LIKE LINE OF IT_PUR_ITEM,
+      IT_PRODUCT TYPE STANDARD TABLE OF Z68192_PRODUCT,
+      WA_PRODUCT LIKE LINE OF IT_PRODUCT,
+      IT_USER TYPE STANDARD TABLE OF Z68192_USER,
+      WA_USER LIKE LINE OF IT_USER,
+      IT_USER_DETA TYPE STANDARD TABLE OF Z68192_USER_DETA,
+      WA_USER_DETA LIKE LINE OF IT_USER_DETA,
+      IT_CARD TYPE STANDARD TABLE OF Z68192_CARD,
+      WA_CARD LIKE LINE OF IT_CARD,
+      PCODE TYPE Z68192_PRODUCT-PR_CODE,
+      DOP TYPE Z68192_PURCHASE-DATEOFPURCHASE,
+      DISC TYPE Z68192_PURCHASE-DISCOUNTAVAILED,
+      COUNT1 TYPE I,
+      UTYPE TYPE Z68192_USER-USERTYPE.
+
+TYPES: BEGIN OF OUTPUT,
+  userid type Z68192_USER-userid,
+  PURCHASEID TYPE Z68192_PURCHASE-PURCHASEID,
+  ITEMNO TYPE Z68192_PUR_ITEM-ITEMNO,
+  PR_CODE TYPE Z68192_PRODUCT-PR_CODE,
+  DATEOFPURCHASE TYPE Z68192_PURCHASE-DATEOFPURCHASE,
+  QUANTITY TYPE Z68192_PUR_ITEM-QUANTITY,
+  PRICE TYPE Z68192_PRODUCT-PRICE,
+  NETPRICE TYPE P DECIMALS 2,
+  END OF OUTPUT.
+
+DATA IT_OUTPUT TYPE STANDARD TABLE OF OUTPUT.
+DATA WA_OUTPUT LIKE LINE OF IT_OUTPUT.
+
+
+
+
+
+*&---------------------------------------------------------------------*
+*&  Include           Y68192_FA2_ASS3_SCR
+*&---------------------------------------------------------------------*
+
+"include scr.
+
+SELECTION-SCREEN BEGIN OF SCREEN 0150.
+
+SELECTION-SCREEN BEGIN OF BLOCK B1 WITH FRAME TITLE TEXT-002.
+PARAMETERS: RB1 RADIOBUTTON GROUP RG1,
+RB2 RADIOBUTTON GROUP RG1.
+SELECTION-SCREEN END OF BLOCK B1.
+
+SELECTION-SCREEN BEGIN OF BLOCK B2 WITH FRAME TITLE TEXT-003.
+PARAMETERS: CHK1 AS CHECKBOX.
+SELECTION-SCREEN END OF BLOCK B2.
+
+SELECTION-SCREEN END OF SCREEN 0150.
+
+
+SELECTION-SCREEN BEGIN OF SCREEN 0151.
+
+SELECTION-SCREEN BEGIN OF BLOCK B3 WITH FRAME.
+
+PARAMETERS: USER_ID TYPE Z68192_USER-USERID.
+SELECTION-SCREEN: ULINE.
+SELECTION-SCREEN: SKIP.
+SELECT-OPTIONS: PROCODE FOR PCODE NO-EXTENSION.
+SELECT-OPTIONS: DATEOP FOR DOP NO-EXTENSION no INTERVALS.
+SELECT-OPTIONS: DISCOUNT FOR DISC NO-EXTENSION NO INTERVALS.
+SELECTION-SCREEN END OF BLOCK B3.
+SELECTION-SCREEN END OF SCREEN 0151.
+
+
+
+*&---------------------------------------------------------------------*
+*&  Include           Y68192_FA2_ASS3_F01
+*&---------------------------------------------------------------------*
+
+*&---------------------------------------------------------------------*
+*&      Form  INIT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+
+" Intiaialization.
+*&---------------------------------------------------------------------*
+*&      Form  INIT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+FORM INIT .
+  SY-TVAR1 = SY-UNAME.
+*  CHK1 = 'X'.
+  CALL SELECTION-SCREEN 0150.
+
+ENDFORM.                    " INIT
+*&---------------------------------------------------------------------*
+*&      Form  SELECTION_SCREEN
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+
+"SElection_screen.
+*&---------------------------------------------------------------------*
+*&      Form  SELECTION_SCREEN
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+FORM SELECTION_SCREEN .
+
+  SELECT COUNT(*) FROM Z68192_USER INTO COUNT1 WHERE USERTYPE = UTYPE AND USERID = USER_ID.
+  IF COUNT1 = 0.
+  MESSAGE 'USERID DOESNOT EXIST.' TYPE 'E'.
+*    MESSAGE E001(Z68192_MSG_CLASS).
+  ENDIF.
+
+ENDFORM.                    " SELECTION_SCREEN
+*&---------------------------------------------------------------------*
+*&      Form  SEL_SCR
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+
+"SEL_SCR.
+*&---------------------------------------------------------------------*
+*&      Form  SEL_SCR
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+FORM SEL_SCR .
+  IF RB1 = 'X'.
+    UTYPE = 'U'.
+  ELSEIF RB2 = 'X'.
+    UTYPE = 'C'.
+  ENDIF.
+  IF CHK1 = 'X' AND SY-DYNNR = 0150.
+    CALL SELECTION-SCREEN 0151 .
+    ELSE.
+  ENDIF.
+ENDFORM.                    " SEL_SCR
+*&---------------------------------------------------------------------*
+*&      Form  DATA_FETCH
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+
+"data-fetch.
+*&---------------------------------------------------------------------*
+*&      Form  DATA_FETCH
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+FORM DATA_FETCH .
+
+  SELECT * FROM Z68192_PURCHASE INTO TABLE IT_PURCHASE WHERE USERID = USER_ID AND DATEOFPURCHASE IN DATEOP.
+  IF SY-SUBRC = 0.
+    SELECT * FROM Z68192_PUR_ITEM INTO TABLE IT_PUR_ITEM FOR ALL ENTRIES IN IT_PURCHASE WHERE PURCHASEID = IT_PURCHASE-PURCHASEID.
+
+    IF SY-SUBRC = 0.
+      SELECT * FROM Z68192_PRODUCT INTO TABLE IT_PRODUCT FOR ALL ENTRIES IN IT_PUR_ITEM WHERE PR_CODE = IT_PUR_ITEM-PR_CODE.
+      IF SY-SUBRC <> 0.
+        MESSAGE 'DATA NOT FOUND.' TYPE 'E'.
+      ENDIF.
+    ENDIF.
+  ELSEIF SY-SUBRC <> 0.
+    MESSAGE 'DATA NOT FOUND.' TYPE 'E'.
+  ENDIF.
+
+ENDFORM.                    " DATA_FETCH
+*&---------------------------------------------------------------------*
+*&      Form  DISPLAY
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+
+"display.
+
+*&---------------------------------------------------------------------*
+*&      Form  DISPLAY
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+FORM DISPLAY.
+  LOOP AT IT_OUTPUT INTO WA_OUTPUT.
+    AT FIRST.
+      WRITE /.
+      WRITE: 0(150) 'purchase details' CENTERED color 3.
+    ENDAT.
+
+    AT NEW USERID.
+      WRITE: / 'userid: ' , WA_OUTPUT-USERID.
+      SKIP.
+      ULINE 1(109).
+      WRITE: /1 '|','PURCHASEID',15 '|','ITEMNO',30 '|','PR_CODE',41 '|','DATE OF PURCHASE' LEFT-JUSTIFIED,60 '|','QUANTITY',75 '|','PRICE',90 '|','NET PRICE',109 '|'
+      .
+      WRITE: / '|'.
+      ULINE 1(109).
+    ENDAT.
+    WRITE: /1 '|',WA_OUTPUT-PURCHASEID,15 '|',WA_OUTPUT-ITEMNO,30 '|',WA_OUTPUT-PR_CODE HOTSPOT,41 '|',WA_OUTPUT-DATEOFPURCHASE LEFT-JUSTIFIED,60 '|',WA_OUTPUT-QUANTITY CENTERED,75 '|',WA_OUTPUT-PRICE,90 '|',WA_OUTPUT-NETPRICE,109 '|'.
+HIDE: WA_OUTPUT-PR_CODE.
+    WRITE: / '|'.
+      ULINE 1(109).
+
+    AT END OF USERID.
+      SUM.
+      WRITE: /1(80) 'TOTAL: ' RIGHT-JUSTIFIED,WA_OUTPUT-NETPRICE.
+    ENDAT.
+  ENDLOOP.
+
+
+ENDFORM.                    " DISPLAY
+*&---------------------------------------------------------------------*
+*&      Form  DATA_PROCESS
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+
+"data_process.
+*&---------------------------------------------------------------------*
+*&      Form  DATA_PROCESS
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+FORM DATA_PROCESS .
+
+  LOOP AT IT_PUR_ITEM INTO WA_PUR_ITEM.
+    READ TABLE IT_PURCHASE INTO WA_PURCHASE WITH KEY PURCHASEID = WA_PUR_ITEM-PURCHASEID.
+    IF SY-SUBRC = 0.
+      READ TABLE IT_PRODUCT INTO WA_PRODUCT WITH KEY PR_CODE = WA_PUR_ITEM-PR_CODE.
+      IF SY-SUBRC = 0.
+        MOVE-CORRESPONDING WA_PURCHASE TO WA_OUTPUT.
+        MOVE-CORRESPONDING WA_PRODUCT TO WA_OUTPUT.
+        MOVE-CORRESPONDING WA_PUR_ITEM TO WA_OUTPUT.
+        WA_OUTPUT-NETPRICE = WA_OUTPUT-QUANTITY * WA_OUTPUT-PRICE.
+        APPEND WA_OUTPUT TO IT_OUTPUT.
+      ENDIF.
+    ENDIF.
+  ENDLOOP.
+
+ENDFORM.                    " DATA_PROCESS
+*&---------------------------------------------------------------------*
+*&      Form  TOP
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+
+"top.
+*&---------------------------------------------------------------------*
+*&      Form  TOP
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+FORM TOP .
+
+  SY-TVAR2 = SY-PAGNO.
+  SY-TVAR3 = SY-REPID.
+  SY-TVAR4 = SY-DATUM.
+
+ENDFORM.                    " TOP
+*&---------------------------------------------------------------------*
+*&      Form  FOOT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+
+"foot.
+*&---------------------------------------------------------------------*
+*&      Form  FOOT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+FORM FOOT .
+  WRITE: / '---easy shop foundation----'.
+ENDFORM.                    " FOOT
+*&---------------------------------------------------------------------*
+*&      Form  SECONDARY_LIST
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM SECONDARY_LIST .
+
+DATA: F(30) TYPE C,
+      V(30) TYPE C.
+GET CURSOR FIELD F VALUE V.
+
+
+IF F = 'WA_OUTPUT-USERID'.    "USER ID.
+SELECT SINGLE * FROM Z68192_USER INTO WA_USER WHERE USERID = V.
+  IF SY-SUBRC = 0.
+SELECT SINGLE * FROM Z68192_USER_DETA INTO WA_USER_DETA WHERE USERID = WA_USER-USERID.
+  IF SY-SUBRC = 0.
+SELECT SINGLE * FROM Z68192_CARD INTO WA_CARD WHERE USERID = WA_USER-USERID.
+  ENDIF.
+  ENDIF.
+  WRITE: / 'USERID:' , V.
+  WRITE: / WA_USER-USERNAME, /,WA_USER_DETA-ADDRESS,/,WA_USER_DETA-EMAILID,/,WA_CARD-CARD_NO,/,WA_CARD-CARD_TYPE.
+ENDIF.
+
+
+IF F = 'WA_OUTPUT-PR_CODE'.   "BASED ON PR CODE.
+  SELECT SINGLE * FROM Z68192_PRODUCT INTO WA_PRODUCT WHERE PR_CODE = V.
+    WRITE: / WA_OUTPUT-PR_CODE, /, WA_PRODUCT-DESCRIPTION,/,WA_PRODUCT-PRICE,'-',WA_PRODUCT-CURRENCY.
+
+    SKIP.
+
+  ENDIF.
+
+ENDFORM.                    " SECONDARY_LIST

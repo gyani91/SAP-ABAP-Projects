@@ -1,0 +1,26 @@
+*&---------------------------------------------------------------------*
+*& Report  ZPRO_LOCAL_CLASS1
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+REPORT  zpro_local_class1.
+
+INCLUDE zpro_local_class1_top.
+*INCLUDE ZPRO_LOCAL_CLASS1_f01.
+
+START-OF-SELECTION.
+  CREATE OBJECT: emp_ref.
+
+  CALL METHOD emp_ref->set_empid
+    EXPORTING
+      empid = 1001.
+
+  DATA eid TYPE i.
+  CALL METHOD emp_ref->get_empid
+    IMPORTING
+      empid = eid.
+
+  WRITE / eid.

@@ -1,0 +1,275 @@
+*&---------------------------------------------------------------------*
+*&  Include           MZ93_DEMOI01
+*&---------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*&      Module  EXIT  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE exit INPUT.
+  IF ok_code = 'FC_EXIT1' OR ok_code = 'FC_EXIT'.
+    LEAVE PROGRAM.
+  ELSEIF ok_code = 'FC_CLEAR1'.
+    CLEAR z681797_user. "To clear program workarea
+    LEAVE SCREEN. "To clear screen workarea
+  ELSEIF ok_code = 'FC_CR'.
+    CALL TRANSACTION 'Z_93_CREATE'.
+  ELSEIF ok_code = 'FC_CH'.
+    CALL TRANSACTION 'Z_93_CHANGE'.
+  ELSEIF ok_code = 'FC_DI'.
+    CALL TRANSACTION 'Z_93_DISPLAY'.
+  ENDIF.
+ENDMODULE.                 " EXIT  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0100  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0100 INPUT.
+  IF ok_code = 'FC_CREATE' OR
+    ok_code = 'FC_CHANGE' OR
+    ok_code = 'FC_DISPLAY'.
+*    CALL SCREEN 0200.
+    CALL SCREEN 0400.
+  ENDIF.
+ENDMODULE.                 " USER_COMMAND_0100  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  VAL_USERID  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE val_userid INPUT.
+  IF ok_code = 'FC_CREATE'.
+    PERFORM val_create.
+  ELSEIF ok_code = 'FC_CHANGE' OR ok_code = 'FC_DISPLAY'.
+    PERFORM val_ch_di.
+  ENDIF.
+ENDMODULE.                 " VAL_USERID  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  VAL_PASSWORD  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE val_password INPUT.
+  IF ok_code = 'FC_CHANGE' OR ok_code = 'FC_DISPLAY'.
+    PERFORM val_pw.
+
+  ENDIF.
+ENDMODULE.                 " VAL_PASSWORD  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  MOD_FN_TYPE_E  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE mod_fn_type_e INPUT.
+  IF ok_code = 'FC_BACK'.
+    CALL SCREEN 100.
+  ELSEIF ok_code = 'FC_EXIT2'.
+    LEAVE PROGRAM.
+  ENDIF.
+ENDMODULE.                 " MOD_FN_TYPE_E  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0200  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0200 INPUT.
+  IF ok_code = 'FC_SAVE'.
+    PERFORM save.
+  ELSEIF ok_code = 'FC_DELETE'.
+    PERFORM delete.
+  ENDIF.
+ENDMODULE.                 " USER_COMMAND_0200  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0102  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0102 INPUT.
+  IF ok_code = 'FC_SAVE'.
+    INSERT ymb_user FROM ymb_user.
+    IF sy-subrc = 0.
+      MESSAGE 'SAVED' TYPE 'S'.
+      CLEAR ymb_user.
+      LEAVE SCREEN.
+    ELSE.
+      MESSAGE 'ERROR' TYPE 'E'.
+    ENDIF.
+
+  ENDIF.
+ENDMODULE.                 " USER_COMMAND_0102  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  EXIT_102  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE exit_102 INPUT.
+  IF ok_code = 'FC_EXIT'.
+    LEAVE PROGRAM.
+  ELSEIF ok_code = 'FC_CLEAR'.
+    CLEAR ymb_user.
+    LEAVE SCREEN.
+
+  ENDIF.
+ENDMODULE.                 " EXIT_102  INPUTSH
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0300  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0300 INPUT.
+  IF ok_code = 'FC_SAVE' AND sy-tcode = 'Z_93_CREATE'.
+    INSERT z681797_user FROM z681797_user.
+    IF sy-subrc = 0.
+      MESSAGE 'DATA ENTERED!' TYPE 'S'.
+    ENDIF.
+  ENDIF.
+
+  IF ok_code = 'FC_SAVE' AND sy-tcode = 'Z_93_CHANGE'.
+    MODIFY z681797_user FROM z681797_user.
+    IF sy-subrc = 0.
+      MESSAGE 'DATA MODIFIED!' TYPE 'S'.
+    ENDIF.
+  ENDIF.
+
+  IF ok_code = 'FC_DELETE' AND sy-tcode = 'Z_93_CHANGE'.
+    DELETE FROM z681797_user WHERE userid =  z681797_user-userid.
+    CLEAR z681797_user.
+    IF sy-subrc = 0.
+      MESSAGE 'DATA DELETED!' TYPE 'S'.
+    ENDIF.
+  ENDIF.
+
+ENDMODULE.                 " USER_COMMAND_0300  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0400  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0400 INPUT.
+  IF ok_code = 'FC_TAB1'.
+    ts-activetab = 'FC_TAB1'.
+    v_dynnr = 0401.
+  ELSEIF ok_code = 'FC_TAB2'.
+    ts-activetab = 'FC_TAB2'.
+    v_dynnr = 0402.
+  ENDIF.
+ENDMODULE.                 " USER_COMMAND_0400  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0500  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0500 INPUT.
+  PERFORM add.
+ENDMODULE.                 " USER_COMMAND_0500  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  MODIFY  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE modify INPUT.
+  PERFORM modify.
+ENDMODULE.                 " MODIFY  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  SELECT_DESELECT  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE select_deselect INPUT.
+  PERFORM select_deselect.
+ENDMODULE.                 " SELECT_DESELECT  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  F4_HELP  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE f4_help INPUT.
+  CALL FUNCTION 'F4IF_FIELD_VALUE_REQUEST'
+    EXPORTING
+      tabname     = 'Z681797_PURCHASE'
+      fieldname   = 'PURCHASEID'
+      searchhelp  = 'Z93_DEMO_F4'
+      dynprofield = 'Z681797_PURCHASE-PURCHASEID'.
+  IF sy-subrc <> 0.
+* Implement suitable error handling here
+  ENDIF.
+
+ENDMODULE.                 " F4_HELP  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  F4_INT_TABLE  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE f4_int_table INPUT.
+  SELECT * FROM z681797_purchase INTO TABLE gt_purchase.
+  CALL FUNCTION 'F4IF_INT_TABLE_VALUE_REQUEST'
+    EXPORTING
+      ddic_structure = 'Z681797_PURCHASE'
+      retfield       = 'USERID'
+*     PVALKEY        = ' '
+      dynpprog       = sy-repid
+      dynpnr         = sy-dynnr
+*     DYNPROFIELD    = ' '
+*     STEPL          = 0
+      window_title   = 'LIST OF USERS'
+*     VALUE          = ' '
+      value_org      = 'S'
+    TABLES
+      value_tab      = gt_purchase.
+
+ENDMODULE.                 " F4_INT_TABLE  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  F1_HELP  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE f1_help INPUT.
+  CALL FUNCTION 'HELP_OBJECT_SHOW_FOR_FIELD'
+    EXPORTING
+      doklangu         = sy-langu
+      doktitle         = 'USER DEFINED TITLE'
+      called_for_tab   = 'Z681797_PURCHASE'
+      called_for_field = 'PURCHASEID'.
+
+ENDMODULE.                 " F1_HELP  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  F1_CREATED  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE f1_created INPUT.
+
+  DATA gt_links TYPE STANDARD TABLE OF tline.
+
+  CALL FUNCTION 'HELP_OBJECT_SHOW'
+    EXPORTING
+      dokclass         = 'TX'
+      doklangu         = sy-langu
+      dokname          = 'Z93_DEMO_F1'
+      doktitle         = 'X'
+      called_for_tab   = ' '
+      called_for_field = ' '
+    TABLES
+      links            = gt_links.
+
+ENDMODULE.                 " F1_CREATED  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0700  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0700 INPUT.
+  IF ok_code = 'FC_CHANGE'.
+    CASE io_1.
+      WHEN 'RED'.
+        v_status = 'ICON_RED_LIGHT'.
+      WHEN 'GREEN'.
+        v_status = 'ICON_GREEN_LIGHT'.
+      WHEN 'YELLOW'.
+        v_status = 'ICON_YELLOW_LIGHT'.
+      WHEN OTHERS.
+        v_status = 'ICON_CANCEL'.
+    ENDCASE.
+  ENDIF.
+ENDMODULE.                 " USER_COMMAND_0700  INPUT

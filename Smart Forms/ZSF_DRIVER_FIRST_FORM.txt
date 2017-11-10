@@ -1,0 +1,76 @@
+*&---------------------------------------------------------------------*
+*&  Include           ZSF_DRIVER_FIRST_FORM
+*&---------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*&      Form  DATA_FETCH
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM data_fetch .
+  SELECT * FROM z681797_user INTO TABLE gt_user WHERE userid IN user_id.
+  IF sy-subrc = 0.
+    SELECT * FROM z681797_purchase INTO TABLE gt_pur WHERE userid IN
+user_id.
+  ENDIF.
+ENDFORM.                    " DATA_FETCH
+
+*&---------------------------------------------------------------------*
+*&      Form  CALL_SSF_FUNC_MODULE
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM call_ssf_func_module .
+  CALL FUNCTION 'SSF_FUNCTION_MODULE_NAME'
+    EXPORTING
+      formname                 =  'ZSF_FIRST'
+*     VARIANT                  = ' '
+*     DIRECT_CALL              = ' '
+   IMPORTING
+     fm_name                  = function_name
+*   EXCEPTIONS
+*     NO_FORM                  = 1
+*     NO_FUNCTION_MODULE       = 2
+*     OTHERS                   = 3
+            .
+  IF sy-subrc <> 0.
+* Implement suitable error handling here
+  ENDIF.
+
+ENDFORM.                    " CALL_SSF_FUNC_MODULE
+*&---------------------------------------------------------------------*
+*&      Form  CALL_SMARTFORM_FUNC_MODULE
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM call_smartform_func_module .
+  CALL FUNCTION function_name
+
+    TABLES
+      gt_output                  = gt_output
+      .
+ENDFORM.                    " CALL_SMARTFORM_FUNC_MODULE
+*&---------------------------------------------------------------------*
+*&      Form  DATA_PROCESS
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM data_process .
+  LOOP AT gt_pur INTO gw_pur.
+    READ TABLE gt_user INTO gw_user WITH KEY userid = gw_pur-userid.
+    MOVE-CORRESPONDING gw_user TO gw_output.
+    MOVE-CORRESPONDING gw_pur TO gw_output.
+    APPEND gw_output TO gt_output.
+  ENDLOOP.
+ENDFORM.                    " DATA_PROCESS

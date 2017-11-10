@@ -1,0 +1,60 @@
+*&---------------------------------------------------------------------*
+*&  Include           MZ727_SHOPEASY_MGMTTOP
+*&---------------------------------------------------------------------*
+PROGRAM sapmz727_shopeasy_mgmt.
+DATA ok_code TYPE sy-ucomm.
+TABLES: z681727_user,z681727_user_det, z727user_mark.
+
+DATA gw_user TYPE z681727_user.
+DATA var(3) TYPE c.
+DATA v1 TYPE i.
+DATA dynnr TYPE sy-dynnr.
+CONTROLS tc TYPE TABSTRIP.
+CONTROLS tc1 TYPE TABSTRIP.
+DATA manage_users TYPE c.
+DATA  gt_user TYPE STANDARD TABLE OF z681727_user.
+CONTROLS table_control TYPE TABLEVIEW USING SCREEN 215.
+DATA var1 TYPE z681727_user-userid.
+
+DATA: gt_user_mark TYPE STANDARD TABLE OF z727user_mark,
+      gw_user_mark LIKE LINE OF gt_user_mark.
+
+DATA line TYPE i.
+
+DATA: BEGIN OF gw_card,
+  userid TYPE z681727_card-userid,
+  card_no TYPE z681727_card-card_no,
+  platinum TYPE c,
+  gold TYPE c,
+  silver TYPE c,
+  expiry_date TYPE z681727_card-expiry_date,
+  discount TYPE z681727_card-discount,
+  END OF gw_card.
+
+DATA gt_card LIKE STANDARD TABLE OF gw_card.
+
+DATA: gt_card_actual TYPE STANDARD TABLE OF z681727_card,
+      gw_card_actual LIKE LINE OF gt_card_actual.
+
+CONTROLS table_control1 TYPE TABLEVIEW USING SCREEN 240.
+
+
+DATA gt_tline TYPE STANDARD TABLE OF tline.
+
+TYPES: BEGIN OF value_tab,
+  userid TYPE z681727_user-userid,
+*   TYPE z681727_user-gender,
+  END OF value_tab.
+
+DATA: gt_value_tab TYPE STANDARD TABLE OF value_tab,
+      gw_tab LIKE LINE OF gt_value_tab.
+DATA : CNT TYPE Z681727_USER-USERID.
+
+DATA : FLAG TYPE I.
+data: flag_uid type i.
+
+
+CONTROLS table_control_u TYPE TABLEVIEW USING SCREEN 213.
+
+data  :GT_VRM TYPE VRM_VALUES,
+      GW_VRM LIKE LINE OF GT_VRM.

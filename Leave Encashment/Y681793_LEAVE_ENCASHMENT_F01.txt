@@ -1,0 +1,100 @@
+*&---------------------------------------------------------------------*
+*&  Include           Y681793_LEAVE_ENCASHMENT_F01
+*&---------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*&      Form  SELECT_QUERIES
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM select_queries.
+  SELECT * FROM y681793_employee INTO TABLE gt_employee.
+  IF sy-subrc <> 0.
+    WRITE:/ 'No data found in Employee Table'.
+  ENDIF.
+
+*LOOP AT gt_employee into gw_employee.
+*  write:/ gw_employee-empid, gw_employee-empname, gw_employee-emailid.
+*ENDLOOP.
+
+  SELECT empid SUM( no_of_days ) FROM y681793_emp_levs INTO
+  TABLE gt_emp_leaves GROUP BY empid.
+  IF sy-subrc <> 0.
+    WRITE:/ 'No data found in Employee Leaves Table'.
+  ENDIF.
+
+*LOOP AT gt_emp_leaves into gw_emp_leaves.
+*  write:/ gw_emp_leaves-empid, gw_emp_leaves-no_of_days.
+*ENDLOOP.
+ENDFORM.                    " SELECT_QUERIES
+*&---------------------------------------------------------------------*
+*&      Form  PROCESSING
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM processing .
+  LOOP AT gt_emp_leaves INTO gw_emp_leaves.
+    READ TABLE gt_employee INTO gw_employee WITH KEY empid =
+  gw_emp_leaves-empid.
+
+    MOVE-CORRESPONDING gw_emp_leaves TO gw_output.
+    MOVE-CORRESPONDING gw_employee TO gw_output.
+
+    gw_output-leaves_balance = 25 - gw_emp_leaves-no_of_days.
+    gw_output-leave_amount = gw_output-leaves_balance *
+        ( gw_output-monthlyincome / 30 ).
+    IF gw_output-leaves_balance >= 15.
+      gw_output-status = 'ENCASHED'.
+    ELSE.
+      gw_output-status = 'LAPSED'.
+    ENDIF.
+
+    APPEND gw_output TO gt_output.
+  ENDLOOP.
+
+  SORT gt_output BY status empid.
+ENDFORM.                    " PROCESSING
+*&---------------------------------------------------------------------*
+*&      Form  DISPLAY
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+form DISPLAY .
+LOOP AT gt_output INTO gw_output.
+  AT FIRST.
+    WRITE: 'Leave Encashment Report                            DATE: '
+COLOR 3 NO-GAP, sy-datum COLOR 3.
+    SKIP.
+    ULINE.
+  ENDAT.
+
+  AT NEW status.
+    WRITE:/ gw_output-status COLOR 5.
+    SKIP.
+    ULINE.
+    WRITE:/ 'Employee ID   Employee Name   Email ID   Job Level   No.'
+      NO-GAP COLOR 4, 'of Leaves Debited   Leave Balance' COLOR 4.
+  ENDAT.
+
+  AT NEW empid.
+    WRITE:/ gw_output-empid , gw_output-empname ,
+      gw_output-emailid , gw_output-joblevel ,
+      gw_output-no_of_days , gw_output-leaves_balance.
+
+    IF gw_output-leaves_balance >= 15.
+      SKIP.
+      WRITE:/ 'Montly salary', gw_output-monthlyincome,
+          'Leave encashment amount', gw_output-leave_amount.
+      SKIP.
+    ENDIF.
+  ENDAT.
+ENDLOOP.
+endform.                    " DISPLAY

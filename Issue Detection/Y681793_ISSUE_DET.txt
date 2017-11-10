@@ -1,0 +1,40 @@
+*&---------------------------------------------------------------------*
+*& Author's Name        : Sumeet Gyanchandani
+*& Date of Creation     : 16 Febuary, 2015
+*& Program Description  : FA2 Handson
+*&---------------------------------------------------------------------*
+*& Report  Y681793_ISSUE_DET
+*&
+*&---------------------------------------------------------------------*
+
+REPORT  Y681793_ISSUE_DET.
+
+INCLUDE Y681793_ISSUE_DET_top.
+"the variables are declared in this include
+
+INCLUDE Y681793_ISSUE_DET_scr.
+"selection screen is declared in this include
+
+INCLUDE Y681793_ISSUE_DET_f01.
+"all the subroutines are present in this include
+
+
+INITIALIZATION.
+  PERFORM init. "call user-defined selection screen
+
+AT SELECTION-SCREEN ON so_bid.
+  PERFORM validate_bid. "Valid book id
+
+START-OF-SELECTION.
+  PERFORM data_fetch.
+  "Statements fetching data from DDIC table are present in subroutine
+
+  PERFORM data_process.
+  "Statements related to data processing are present in this subroutine
+  PERFORM fill_fcat. "filling the field cat internal table
+  PERFORM fill_sort. "filling the sort table
+  PERFORM fill_layout. "filling the layout work area
+  PERFORM fill_events. "filling the events internal table.
+
+END-OF-SELECTION.
+  PERFORM list_display. "calling reuse_alv_list_display

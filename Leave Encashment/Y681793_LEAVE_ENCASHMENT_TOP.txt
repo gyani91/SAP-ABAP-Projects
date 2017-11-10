@@ -1,0 +1,34 @@
+*&---------------------------------------------------------------------*
+*&  Include           Y681793_LEAVE_ENCASHMENT_TOP
+*&---------------------------------------------------------------------*
+
+DATA gt_employee TYPE STANDARD TABLE OF y681793_employee.
+
+DATA gw_employee LIKE LINE OF gt_employee.
+
+TYPES: BEGIN OF ls_emp_leaves,
+  empid TYPE y681793_emp_levs-empid,
+*  fromdate TYPE y681793_emp_levs-fromdate,
+  no_of_days TYPE y681793_emp_levs-no_of_days,
+END OF ls_emp_leaves.
+
+DATA gt_emp_leaves TYPE STANDARD TABLE OF ls_emp_leaves.
+
+DATA gw_emp_leaves LIKE LINE OF gt_emp_leaves.
+
+TYPES: BEGIN OF ls_output,
+  status(15) TYPE c,
+
+  empname TYPE y681793_employee-empname,
+  emailid TYPE y681793_employee-emailid,
+  joblevel TYPE y681793_employee-joblevel,
+  no_of_days TYPE y681793_emp_levs-no_of_days,
+  leaves_balance TYPE y681793_emp_levs-no_of_days,
+  monthlyincome TYPE y681793_employee-monthlyincome,
+  leave_amount TYPE y681793_employee-monthlyincome,
+  empid TYPE y681793_employee-empid,
+END OF ls_output.
+
+DATA gt_output TYPE STANDARD TABLE OF ls_output.
+
+DATA gw_output LIKE LINE OF gt_output.

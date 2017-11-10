@@ -1,0 +1,530 @@
+*&---------------------------------------------------------------------*
+*&  Include           MZ727_SHOPEASY_MGMTI01
+*&---------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*&      Module  M2  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+
+*  ELSEIF OK_CODE = 'FC_BUTTON1'.
+*    MESSAGE 'BUTTON 1 WAS CLICKED' TYPE 'S'.
+*  ENDIF.
+" M2  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0100  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0100 INPUT.
+  IF ok_code = 'FC_LOGIN'.
+    IF z681727_user-usertype = 'A'.
+      CALL SCREEN 0200.
+    ELSEIF z681727_user-usertype = 'U'.
+      CALL SCREEN 0300.
+    ENDIF.
+*  ELSEIF ok_code = 'FC_EXIT'.
+*    LEAVE PROGRAM.
+*    ELSEIF OK_CODE = 'FC_BACK'.
+*      LEAVE PROGRAM.
+*      ELSEIF OK_CODE = 'FC_CANCEL'.
+*        LEAVE SCREEN.
+  ENDIF.
+ENDMODULE.                 " USER_COMMAND_0100  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  VALIDATION  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE validation INPUT.
+  IF ok_code = 'FC_LOGIN'.
+    SELECT SINGLE * FROM z681727_user INTO gw_user WHERE userid = z681727_user-userid AND usertype = z681727_user-usertype.
+    IF sy-subrc <> 0.
+      MESSAGE 'Invalid User ID' TYPE 'E'.
+    ENDIF.
+*  MESSAGE 'LOGIN BUTTON IS CLICKED' TYPE 'S'.
+
+    SELECT SINGLE * FROM z681727_user INTO gw_user WHERE userid = z681727_user-userid
+       AND usertype = z681727_user-usertype
+       AND password = z681727_user-password.
+    IF sy-subrc <> 0.
+      MESSAGE 'Invalid Password' TYPE 'E'.
+    ELSE.
+      MESSAGE 'LOGIN SUCCESSFUL' TYPE 'S'.
+    ENDIF.
+  ENDIF.
+
+ENDMODULE.                 " VALIDATION  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  EXIT_MODULE  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE exit_module INPUT.
+  IF ok_code = 'FC_CLEAR'.
+    LEAVE SCREEN.
+  ELSEIF ok_code = 'FC_BACK'.
+    LEAVE TO SCREEN 0 .
+
+  ELSEIF ok_code = 'FC_EXIT'.
+    IF sy-datar = 'X'.
+      CALL FUNCTION 'POPUP_TO_CONFIRM'
+        EXPORTING
+*         TITLEBAR                    = ' '
+*         DIAGNOSE_OBJECT             = ' '
+          text_question               = 'The changes made by you will be lost. Do you want to leave the application?'
+*         TEXT_BUTTON_1               = 'YES'(001)
+*         ICON_BUTTON_1               = ' '
+*         TEXT_BUTTON_2               = 'NO'(002)
+*         ICON_BUTTON_2               = ' '
+*         DEFAULT_BUTTON              = '1'
+*         DISPLAY_CANCEL_BUTTON       = 'X'
+*         USERDEFINED_F1_HELP         = ' '
+*         START_COLUMN                = 25
+*         START_ROW                   = 6
+*         POPUP_TYPE                  =
+*         IV_QUICKINFO_BUTTON_1       = ' '
+*         IV_QUICKINFO_BUTTON_2       = ' '
+       IMPORTING
+         answer                      = var
+*       TABLES
+*         PARAMETER                   =
+*       EXCEPTIONS
+*         TEXT_NOT_FOUND              = 1
+*         OTHERS                      = 2
+                .
+      IF sy-subrc <> 0.
+* Implement suitable error handling here
+      ENDIF.
+      IF var = '1'.
+        LEAVE PROGRAM.
+      ENDIF.
+    ENDIF.
+  ELSE.
+    LEAVE PROGRAM.
+  ENDIF.
+ENDMODULE.                 " EXIT_MODULE  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_6001  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_6001 INPUT.
+  v1 = 1.
+ENDMODULE.                 " USER_COMMAND_6001  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_6002  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_6002 INPUT.
+  v1 = 1.
+ENDMODULE.                 " USER_COMMAND_6002  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0200  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0200 INPUT.
+  IF ok_code = 'FC_OKAY'.
+    IF manage_users = 'X'.
+      CALL SCREEN 0210.
+    ENDIF.
+  ENDIF.
+ENDMODULE.                 " USER_COMMAND_0200  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0210  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0210 INPUT.
+*  flag = 0.
+  IF ok_code = 'FC_TAB1'.
+    dynnr = '0211'.
+    tc-activetab = 'FC_TAB1'.
+  ELSEIF ok_code = 'FC_TAB2'.
+    dynnr = '0212'.
+    tc-activetab = 'FC_TAB2'.
+  ELSEIF ok_code = 'FC_ALL_USERS'.
+    dynnr = '0213'.
+    tc-activetab = 'FC_ALL_USERS'.
+  ENDIF.
+
+ENDMODULE.                 " USER_COMMAND_0210  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  MODIFY_IT  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE modify_it INPUT.
+*modify gt_user from z681727_user INDEX table_control-CURRENT_LINE.
+
+  MODIFY gt_user_mark FROM z727user_mark INDEX table_control-current_line.
+
+ENDMODULE.                 " MODIFY_IT  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0215  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0215 INPUT.
+  IF ok_code = 'FC_SELECT'.
+    LOOP AT gt_user_mark INTO gw_user_mark.
+      gw_user_mark-mark = 'X'.
+      MODIFY gt_user_mark FROM gw_user_mark INDEX sy-tabix.
+    ENDLOOP.
+  ENDIF.
+  IF ok_code = 'FC_DESELECT'.
+    LOOP AT gt_user_mark INTO gw_user_mark.
+      gw_user_mark-mark = ' '.
+      MODIFY gt_user_mark FROM gw_user_mark INDEX sy-tabix.
+    ENDLOOP.
+  ENDIF.
+  IF ok_code = 'FC_ADD_LINE'.
+    APPEND INITIAL LINE TO gt_user_mark.
+  ENDIF.
+ENDMODULE.                 " USER_COMMAND_0215  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0220  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0220 INPUT.
+*if ok_code = ' '.
+*  select single * from z681727_product into z681727_product where pr_code = z681727_product-pr_code.
+*    if sy-subrc = 0.
+*      select
+*  endif.
+ENDMODULE.                 " USER_COMMAND_0220  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  MODIFY_IT1  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE modify_it1 INPUT.
+  IF ok_code = 'FC_SAVE'.
+    MODIFY gt_card FROM gw_card INDEX table_control-current_line.
+  ENDIF.
+ENDMODULE.                 " MODIFY_IT1  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  F1_USERID  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE f1_userid INPUT.
+  CALL FUNCTION 'HELP_OBJECT_SHOW_FOR_FIELD'
+   EXPORTING
+     doklangu                            = sy-langu
+*   DOKTITLE                            = ' '
+*   CALLED_BY_TCODE                     =
+*   CALLED_BY_PROGRAM                   =
+*   CALLED_BY_DYNP                      =
+     called_for_tab                      = 'Z681727_USER'
+     called_for_field                    = 'USERID'
+*   CALLED_FOR_TAB_FLD_BTCH_INPUT       =
+*   CALLED_BY_CUAPROG                   =
+*   CALLED_BY_CUASTAT                   =
+*   MERGE_DZ_IF_AVAILABLE               =
+*   MEMORYID                            =
+*   EXPLICIT_MEMORYID                   = ' '
+* TABLES
+*   LINKS                               =
+*   EXCLUDEFUN                          =
+* EXCEPTIONS
+*   OBJECT_NOT_FOUND                    = 1
+*   SAPSCRIPT_ERROR                     = 2
+*   OTHERS                              = 3
+            .
+  IF sy-subrc <> 0.
+* Implement suitable error handling here
+  ENDIF.
+
+
+
+  CALL FUNCTION 'HELP_OBJECT_SHOW'
+    EXPORTING
+      dokclass                            = 'DE'
+*   DOKLANGU                            = SY-LANGU
+      dokname                             = 'Z681727UID'
+*   DOKTITLE                            = ' '
+*   CALLED_BY_PROGRAM                   = ' '
+*   CALLED_BY_DYNP                      = ' '
+*   CALLED_FOR_TAB                      = ' '
+*   CALLED_FOR_FIELD                    = ' '
+*   CALLED_FOR_TAB_FLD_BTCH_INPUT       = ' '
+*   MSG_VAR_1                           = ' '
+*   MSG_VAR_2                           = ' '
+*   MSG_VAR_3                           = ' '
+*   MSG_VAR_4                           = ' '
+*   CALLED_BY_CUAPROG                   = ' '
+*   CALLED_BY_CUASTAT                   =
+*   SHORT_TEXT                          = ' '
+*   CLASSIC_SAPSCRIPT                   = ' '
+    TABLES
+      links                               = gt_tline
+* EXCEPTIONS
+*   OBJECT_NOT_FOUND                    = 1
+*   SAPSCRIPT_ERROR                     = 2
+*   OTHERS                              = 3
+            .
+  IF sy-subrc <> 0.
+* Implement suitable error handling here
+  ENDIF.
+ CALL FUNCTION 'HELP_OBJECT_SHOW'
+    EXPORTING
+      dokclass                            = 'TX'
+*   DOKLANGU                            = SY-LANGU
+      dokname                             = 'Z681727USERTYPE'
+*   DOKTITLE                            = ' '
+*   CALLED_BY_PROGRAM                   = ' '
+*   CALLED_BY_DYNP                      = ' '
+*   CALLED_FOR_TAB                      = ' '
+*   CALLED_FOR_FIELD                    = ' '
+*   CALLED_FOR_TAB_FLD_BTCH_INPUT       = ' '
+*   MSG_VAR_1                           = ' '
+*   MSG_VAR_2                           = ' '
+*   MSG_VAR_3                           = ' '
+*   MSG_VAR_4                           = ' '
+*   CALLED_BY_CUAPROG                   = ' '
+*   CALLED_BY_CUASTAT                   =
+*   SHORT_TEXT                          = ' '
+*   CLASSIC_SAPSCRIPT                   = ' '
+    TABLES
+      links                               = gt_tline
+* EXCEPTIONS
+*   OBJECT_NOT_FOUND                    = 1
+*   SAPSCRIPT_ERROR                     = 2
+*   OTHERS                              = 3
+            .
+  IF sy-subrc <> 0.
+* Implement suitable error handling here
+  ENDIF.
+
+ENDMODULE.                 " F1_USERID  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  F1_NAME  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE f1_name INPUT.
+  CALL FUNCTION 'HELP_OBJECT_SHOW_FOR_FIELD'
+   EXPORTING
+     doklangu                            = sy-langu
+*   DOKTITLE                            = ' '
+*   CALLED_BY_TCODE                     =
+*   CALLED_BY_PROGRAM                   =
+*   CALLED_BY_DYNP                      =
+     called_for_tab                      = 'Z681727_USER'
+     called_for_field                    = 'PASSWORD'
+*   CALLED_FOR_TAB_FLD_BTCH_INPUT       =
+*   CALLED_BY_CUAPROG                   =
+*   CALLED_BY_CUASTAT                   =
+*   MERGE_DZ_IF_AVAILABLE               =
+*   MEMORYID                            =
+*   EXPLICIT_MEMORYID                   = ' '
+* TABLES
+*   LINKS                               =
+*   EXCLUDEFUN                          =
+* EXCEPTIONS
+*   OBJECT_NOT_FOUND                    = 1
+*   SAPSCRIPT_ERROR                     = 2
+*   OTHERS                              = 3
+            .
+  IF sy-subrc <> 0.
+* Implement suitable error handling here
+  ENDIF.
+
+ENDMODULE.                 " F1_NAME  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  F4_USERID_100  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE f4_userid_100 INPUT.
+  CALL FUNCTION 'F4IF_FIELD_VALUE_REQUEST'
+    EXPORTING
+      tabname                   = 'Z681727_USER'
+      fieldname                 = 'USERID'
+     searchhelp                = 'ZF4_USERID_727'
+*   SHLPPARAM                 = ' '
+     dynpprog                  = sy-repid
+     dynpnr                    = sy-dynnr
+     dynprofield               = 'Z681727_USER-USERID'
+*   STEPL                     = 0
+*   VALUE                     = ' '
+*   MULTIPLE_CHOICE           = ' '
+*   DISPLAY                   = ' '
+*   SUPPRESS_RECORDLIST       = ' '
+*   CALLBACK_PROGRAM          = ' '
+*   CALLBACK_FORM             = ' '
+*   CALLBACK_METHOD           =
+*   SELECTION_SCREEN          = ' '
+* IMPORTING
+*   USER_RESET                =
+* TABLES
+*   RETURN_TAB                =
+* EXCEPTIONS
+*   FIELD_NOT_FOUND           = 1
+*   NO_HELP_FOR_FIELD         = 2
+*   INCONSISTENT_HELP         = 3
+*   NO_VALUES_FOUND           = 4
+*   OTHERS                    = 5
+            .
+  IF sy-subrc <> 0.
+* Implement suitable error handling here
+  ENDIF.
+
+
+
+ENDMODULE.                 " F4_USERID_100  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  F4_USERNAME_100  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE f4_username_100 INPUT.
+
+ENDMODULE.                 " F4_USERNAME_100  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  F4_USER_ID  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE f4_user_id INPUT.
+  REFRESH gt_value_tab.
+  SELECT * FROM z681727_user INTO z681727_user.
+    MOVE-CORRESPONDING z681727_user TO gw_tab.
+    APPEND gw_tab TO gt_value_tab.
+
+  ENDSELECT.
+  CLEAR z681727_user.
+  CALL FUNCTION 'F4IF_INT_TABLE_VALUE_REQUEST'
+    EXPORTING
+*     DDIC_STRUCTURE         = ' '
+      retfield               = 'USERID'
+*     PVALKEY                = ' '
+     dynpprog               = sy-repid
+     dynpnr                 = sy-dynnr
+     dynprofield            = 'Z681727_USER-USERID'
+*     STEPL                  = 0
+     window_title           = 'CHOOSE USER ID'
+*     VALUE                  = ' '
+     value_org              = 'S'
+*     MULTIPLE_CHOICE        = ' '
+*     DISPLAY                = ' '
+*     CALLBACK_PROGRAM       = ' '
+*     CALLBACK_FORM          = ' '
+*     CALLBACK_METHOD        =
+*     MARK_TAB               =
+*   IMPORTING
+*     USER_RESET             =
+    TABLES
+      value_tab              = gt_value_tab
+*     FIELD_TAB              =
+*     RETURN_TAB             =
+*     DYNPFLD_MAPPING        =
+*   EXCEPTIONS
+*     PARAMETER_ERROR        = 1
+*     NO_VALUES_FOUND        = 2
+*     OTHERS                 = 3
+            .
+  IF sy-subrc <> 0.
+* Implement suitable error handling here
+  ENDIF.
+
+
+
+ENDMODULE.                 " F4_USER_ID  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  EXIT_MOD  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE exit_mod INPUT.
+  IF ok_code = 'FC_BACK'.
+    LEAVE TO SCREEN 0.
+  ELSEIF ok_code = 'FC_EXIT'.
+    LEAVE PROGRAM.
+  ELSEIF ok_code = 'FC_CLEAR'.
+    LEAVE SCREEN.
+  ENDIF.
+ENDMODULE.                 " EXIT_MOD  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  EXIT_210  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE exit_210 INPUT.
+  IF ok_code = 'FC_BACK'.
+    LEAVE TO SCREEN 0.
+  ELSEIF ok_code = 'FC_EXIT'.
+    LEAVE PROGRAM.
+  ELSEIF ok_code = 'FC_CLEAR'.
+    LEAVE SCREEN.
+  ENDIF.
+ENDMODULE.                 " EXIT_210  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  VALIDATION_210  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE validation_210 INPUT.
+  flag = 0.
+  IF ok_code ='FC_SAVE'  .
+    IF strlen( z681727_user-username ) = 0.
+      MESSAGE 'ENTER USER NAME' TYPE 'E'.
+      flag = 1.
+    ENDIF.
+    IF strlen( z681727_user-password ) = 0.
+      MESSAGE 'ENTER PASSWORD' TYPE 'E'.
+      flag = 1.
+    ENDIF.
+    IF strlen( z681727_user-password ) < 4.
+      MESSAGE 'PASSWORD SHOULD HAVE MORE THAN 4 CHARACTERS' TYPE 'E'.
+      flag = 1.
+    ENDIF.
+
+    IF flag = 0.
+      INSERT z681727_user FROM z681727_user .
+      IF sy-subrc = 0.
+        MESSAGE 'USER ADDED ' TYPE 'S'.
+*        LEAVE SCREEN.
+        CLEAR z681727_user-username .
+        CLEAR z681727_user-password .
+      ENDIF.
+
+    ENDIF.
+  ENDIF.
+
+
+
+ENDMODULE.                 " VALIDATION_210  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  UPDATING_DET_212  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE updating_det_212 INPUT.
+  flag_uid = 0.
+  IF ok_code = 'FC_ARROW'.
+    SELECT SINGLE * FROM z681727_user INTO z681727_user WHERE userid = z681727_user_det-userid.
+    IF sy-subrc = 0.
+      SELECT SINGLE * FROM z681727_user_det INTO z681727_user_det WHERE userid = z681727_user_det-userid.
+      IF sy-subrc <> 0.
+        MESSAGE 'USER DETAILS NOT MAINTAINED' TYPE 'E'.
+      ELSE.
+        flag_uid = 1.
+      ENDIF.
+    ELSE .
+      MESSAGE 'USERID NOT FOUND IN USER TABLE' TYPE 'E'.
+    ENDIF.
+  ENDIF.
+ENDMODULE.                 " UPDATING_DET_212  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  F1_USERTYPE  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+module F1_USERTYPE input.
+
+endmodule.                 " F1_USERTYPE  INPUT

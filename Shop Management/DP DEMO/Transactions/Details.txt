@@ -1,0 +1,5 @@
+as its  demo
+
+there is separate transaction for each screen
+
+z_93_change, z_93_create, z_93_display all will call screen 100.

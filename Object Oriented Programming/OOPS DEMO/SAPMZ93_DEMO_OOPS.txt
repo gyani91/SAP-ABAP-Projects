@@ -1,0 +1,14 @@
+*&---------------------------------------------------------------------*
+*& Module Pool       SAPMZ93_DEMO_OOPS
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+
+INCLUDE MZ93_DEMO_OOPSTOP                       .    " global Data
+
+ INCLUDE MZ93_DEMO_OOPSO01                       .  " PBO-Modules
+ INCLUDE MZ93_DEMO_OOPSI01                       .  " PAI-Modules
+ INCLUDE MZ93_DEMO_OOPSF01                       .  " FORM-Routines

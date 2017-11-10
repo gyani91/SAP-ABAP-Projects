@@ -1,0 +1,231 @@
+*&---------------------------------------------------------------------*
+*&  Include           MZ5255_SHOPEASY_MGMT2F01
+*&---------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*&      Form  SAVE_220
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM save_220 .
+
+  IF z55_product-currency IS INITIAL.
+    z55_product-currency = 'INR'.
+  ENDIF.
+
+  IF  flag_pr_220 = 0.
+    INSERT z55_product FROM z55_product.
+    IF sy-subrc = 0.
+      MESSAGE 'SAVED SUCCESSFULLY' TYPE 'S'.
+      CLEAR z55_product.
+    ENDIF.
+  ELSE.
+
+    MODIFY z55_product FROM z55_product ."WHERE pr_code = z55_product-pr_code.
+    IF sy-subrc = 0.
+      MESSAGE 'UPDATED SUCCESSFULLY' TYPE 'S'.
+      CLEAR z55_product.
+    ENDIF.
+  ENDIF.
+
+ENDFORM.                    " SAVE_220
+*&---------------------------------------------------------------------*
+*&      Form  SAVE
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM save .
+  IF f_new_user = 1.
+    z55_user-usertype = 'C'.
+    z55_user-created_on = sy-datum.
+    INSERT z55_user FROM z55_user.
+  ENDIF.
+
+  z55_card1-userid = z55_user-userid.
+  INSERT z55_card1 FROM z55_card1.
+  IF sy-subrc = 0.
+    MESSAGE 'SAVED SUCCESSFULLY' TYPE 'S'.
+    privileged_customer = ' '.
+    v_flag = 0.
+
+
+  ENDIF.
+  CLEAR z55_user.
+  CLEAR z55_card1.
+
+
+
+*    privileged_customer = ' ' .
+
+
+ENDFORM.                    " SAVE
+*&---------------------------------------------------------------------*
+*&      Form  DATA_FETCH_250
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM data_fetch_250 .
+  CLEAR gt_out.
+  SELECT * FROM z55_purchase_ite INTO TABLE gt_pi WHERE purchaseid = z55_purchase-purchaseid.
+  IF sy-subrc = 0.
+    SELECT * FROM z55_product INTO TABLE gt_pro FOR ALL ENTRIES IN gt_pi WHERE pr_code = gt_pi-pr_code.
+    IF sy-subrc = 0.
+      LOOP AT gt_pi INTO gw_pi.
+        READ TABLE gt_pro INTO gw_pro WITH KEY pr_code = gw_pi-pr_code.
+        IF sy-subrc = 0.
+          MOVE-CORRESPONDING gw_pi TO gw_out.
+          MOVE-CORRESPONDING gw_pro TO gw_out.
+          gw_out-total = gw_out-price * gw_out-quantity.
+          APPEND gw_out TO gt_out.
+        ENDIF.
+      ENDLOOP.
+
+    ENDIF.
+  ENDIF.
+ENDFORM.                    " DATA_FETCH_250
+*&---------------------------------------------------------------------*
+*&      Form  CALCULATE
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM calculate .
+  IF gt_out IS NOT INITIAL.
+    DESCRIBE TABLE gt_out LINES lin.
+    READ TABLE gt_out INTO gw_out INDEX lin.
+
+    SELECT SINGLE * FROM z55_product INTO gw_pro WHERE pr_code = gw_out-pr_code.
+
+    IF sy-subrc = 0.
+      gw_out-description = gw_pro-description.
+      gw_out-uom = gw_pro-uom.
+      gw_out-price = gw_pro-price.
+      gw_out-total = gw_out-price * gw_out-quantity.
+*    APPEND gw_out TO gt_out.
+      MODIFY gt_out FROM gw_out INDEX lin.
+
+      CLEAR gw_out.
+      count = count + 1.
+      gw_out-itemid = count.
+      APPEND gw_out TO gt_out.
+      DESCRIBE TABLE gt_out LINES lin.
+
+    ENDIF.
+  ELSEIF gt_out IS INITIAL.
+    APPEND INITIAL LINE TO gt_out.
+  ENDIF.
+
+
+ENDFORM.                    " CALCULATE
+*&---------------------------------------------------------------------*
+*&      Form  SAVE_310
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM save_310 .
+  sum = 0.
+  LOOP AT gt_out INTO gw_out .
+    sum = sum + gw_out-total.
+  ENDLOOP.
+  sum = sum - sum * z55_card1-discount  / 100.
+ENDFORM.                    " SAVE_310
+*&---------------------------------------------------------------------*
+*&      Form  DELETE_ROWS
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM delete_rows .
+  LOOP AT gt_out INTO gw_out.
+    IF gw_out-mark = 'X'.
+      count = count - 1.
+    ENDIF.
+  ENDLOOP.
+  DELETE gt_out WHERE mark = 'X' .
+ENDFORM.                    " DELETE_ROWS
+*&---------------------------------------------------------------------*
+*&      Form  SET
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM set .
+
+  LOOP AT gt_out INTO gw_out.
+    gw_out-itemid = sy-tabix.
+    MODIFY gt_out FROM gw_out INDEX sy-tabix.
+
+  ENDLOOP.
+  PERFORM save.
+ENDFORM.                    " SET
+*&---------------------------------------------------------------------*
+*&      Form  SAVE_INT_310
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM save_int_310 .
+*   IF z55_pur_pro_item IS NOT INITIAL.
+*    MODIFY gt_out FROM z55_pur_pro_item INDEX table_control_310-current_line.
+*    IF OK_CODE = 'FC_SAVE'.
+*        MOVE-CORRESPONDING z55_pur_pro_item TO gw_pi.
+*        MOVE-CORRESPONDING z55_purchase TO   gw_pi.
+*
+*        INSERT z55_purchase_ite FROM gw_pi.
+*        IF SY-subrc <> 0.
+*          flag_save_dis = 2.
+*          EXIT.
+*        ENDIF.
+*            CLEAR gw_pi.
+*       ENDIF.
+*  ENDIF.
+*        gw_pur-purchaseid = z55_purchase-purchaseid.
+  z55_purchase-currency = 'INR'.
+  z55_purchase-dateofpurchase = sy-datum.
+  z55_purchase-discountavailed = 'X'.
+  z55_purchase-purchaseamount = sum.
+  z55_purchase-userid = z55_purchase-userid.
+  z55_purchase-purchaseid = z55_purchase-purchaseid.
+
+  INSERT z55_purchase FROM z55_purchase.
+  IF sy-subrc = 0.
+    LOOP AT gt_out INTO gw_out.
+      IF gw_out-pr_code <> 0 OR gw_out-quantity <> 0.
+        MOVE-CORRESPONDING gw_out TO gw_pi.
+        MOVE-CORRESPONDING gw_pur TO gw_pi.
+  gw_pi-purchaseid = z55_purchase-purchaseid.
+*
+
+          INSERT z55_purchase_ite FROM gw_pi.
+          IF sy-subrc = 0.
+            MESSAGE 'data is saved in ddic table.' TYPE 'S'.
+          ENDIF.
+
+*    INSERT Z55_PRODUCT FROM GW_PRO.
+      ENDIF.
+    ENDLOOP.
+  ENDIF.
+*INSERT z55_purchase FROM Z55_PURCHASE.
+*Z55_PRODUCT-price = 'INR'.
+*INSERT Z55_PRODUCT FROM GT_OUT.
+*INSERT
+ENDFORM.                    " SAVE_INT_310

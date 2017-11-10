@@ -1,0 +1,204 @@
+*&---------------------------------------------------------------------*
+*&  Include           MZ93_DEMOO01
+*&---------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_0100  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE status_0100 OUTPUT.
+  IF SY-tcode = 'Z_93_CREATE'.
+    SET PF-STATUS 'DEMO_GUI_100' EXCLUDING 'FC_CR'.
+  ELSEIF SY-tcode = 'Z_93_CHANGE'.
+    SET PF-STATUS 'DEMO_GUI_100' EXCLUDING 'FC_CH'.
+  ELSEIF SY-tcode = 'Z_93_DISPLAY'.
+    SET PF-STATUS 'DEMO_GUI_100' EXCLUDING 'FC_DI'.
+  ELSE. SET PF-STATUS 'DEMO_GUI_100'.
+  ENDIF.
+  SET TITLEBAR 'TIT1'.
+ENDMODULE.                 " STATUS_0100  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_0200  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE status_0200 OUTPUT.
+  SET PF-STATUS 'DEMO_GUI_200'.
+  SET TITLEBAR 'TIT2' WITH z681797_user-userid.
+
+ENDMODULE.                 " STATUS_0200  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  PB_INVISIBLE  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE pb_invisible OUTPUT.
+  IF ok_code = 'FC_CREATE'.
+    PERFORM invi_delete.
+  ELSEIF ok_code = 'FC_DISPLAY'.
+    PERFORM invi_delete.
+    PERFORM invi_save.
+  ENDIF.
+ENDMODULE.                 " PB_INVISIBLE  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  DATA_FETCH  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+module DATA_FETCH output.
+  IF OK_CODE = 'FC_DISPLAY' OR OK_CODE = 'FC_CHANGE'.
+    SELECT SINGLE * FROM Z681797_USER INTO Z681797_USER
+      WHERE USERID = Z681797_USER-USERID.
+      IF SY-SUBRC <> 0.
+        MESSAGE 'DATA FETCH UNSUCCESSFUL!' TYPE 'E'.
+
+      ENDIF.
+
+  ENDIF.
+endmodule.                 " DATA_FETCH  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  DISABLE_BUTTONS  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+module DISABLE_BUTTONS output.
+  LOOP AT SCREEN.
+    IF SY-tcode = 'Z_93_CREATE'.
+      IF SCREEN-name = 'PB_CHANGE' OR SCREEN-name = 'PB_DISPLAY'.
+        SCREEN-input = 0.
+        MODIFY SCREEN.
+      ENDIF.
+    ELSEIF SY-tcode = 'Z_93_CHANGE'.
+      IF SCREEN-name = 'PB_CREATE' OR SCREEN-name = 'PB_DISPLAY'.
+        SCREEN-input = 0.
+        MODIFY SCREEN.
+      ENDIF.
+    ELSEIF SY-tcode = 'Z_93_DISPLAY'.
+      IF SCREEN-name = 'PB_CHANGE' OR SCREEN-name = 'PB_CREATE'.
+        SCREEN-input = 0.
+        MODIFY SCREEN.
+      ENDIF.
+    ENDIF.
+  ENDLOOP.
+endmodule.                 " DISABLE_BUTTONS  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  DATA_CHANGE  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+module DATA_CHANGE output.
+  IF SY-tcode = 'Z_93_CHANGE'.
+    SELECT SINGLE * FROM Z681797_USER
+      WHERE USERID = Z681797_USER.
+
+  ENDIF.
+endmodule.                 " DATA_CHANGE  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  NON_EDITABLE_DISPLAY  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+module NON_EDITABLE_DISPLAY output.
+  IF SY-tcode = 'Z_93_DISPLAY'.
+    LOOP AT SCREEN.
+      SCREEN-input = 0.
+      MODIFY SCREEN.
+    ENDLOOP.
+
+  ENDIF.
+endmodule.                 " NON_EDITABLE_DISPLAY  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  DATA_DISPLAY  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+module DATA_DISPLAY output.
+IF SY-tcode = 'Z_93_DISPLAY'.
+  SELECT SINGLE * FROM z681797_user INTO z681797_user
+    WHERE USERID = z681797_user-USERID.
+
+ENDIF.
+endmodule.                 " DATA_DISPLAY  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  INITIAL  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+module INITIAL output.
+  IF ts-activetab IS INITIAL.
+    ts-activetab = 'FC_TAB1'.
+    V_DYNNR = 0401.
+  ENDIF.
+endmodule.                 " INITIAL  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  FETCH_DATA  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+module FETCH_DATA output.
+  IF gt_user is INITIAL.
+    SELECT * FROM z681797_user INTO TABLE gt_user.
+
+
+  ENDIF.
+endmodule.                 " FETCH_DATA  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  NON_EDITABLE  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+module NON_EDITABLE output.
+  perform non_editable.
+endmodule.                 " NON_EDITABLE  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  CLEAR  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+module CLEAR output.
+  PERFORM clear.
+endmodule.                 " CLEAR  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  FETCH_DATA_DETAILS  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+module FETCH_DATA_DETAILS output.
+  PERFORM FETCH_DATA_DETAILS.
+endmodule.                 " FETCH_DATA_DETAILS  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  NON_EDITABLE_DETAILS  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+module NON_EDITABLE_DETAILS output.
+  PERFORM NON_EDITABLE_DETAILS.
+endmodule.                 " NON_EDITABLE_DETAILS  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  ICON  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+module ICON output.
+  IF v_status IS INITIAL.
+    v_status = 'ICON_CANCEL'.
+  ENDIF.
+
+  CALL FUNCTION 'ICON_CREATE'
+    EXPORTING
+      name                        = V_STATUS
+*     TEXT                        = ' '
+*     INFO                        = ' '
+*     ADD_STDINF                  = 'X'
+   IMPORTING
+     RESULT                      = STATUS
+*   EXCEPTIONS
+*     ICON_NOT_FOUND              = 1
+*     OUTPUTFIELD_TOO_SHORT       = 2
+*     OTHERS                      = 3
+            .
+  IF sy-subrc <> 0.
+* Implement suitable error handling here
+  ENDIF.
+
+endmodule.                 " ICON  OUTPUT

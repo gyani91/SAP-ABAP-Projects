@@ -1,0 +1,215 @@
+*&---------------------------------------------------------------------*
+*&  Include           MZ5255_SHOPEASY_MGMT2O01
+*&---------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_0200  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE status_0200 OUTPUT.
+  SET PF-STATUS 'PF200'.
+  SET TITLEBAR 'TITLE200' WITH gw_user-username.
+
+ENDMODULE.                 " STATUS_0200  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_0100  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE status_0100 OUTPUT.
+  SET PF-STATUS 'PF100'.
+  SET TITLEBAR 'TITLE100'.
+
+ENDMODULE.                 " STATUS_0100  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_0300  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE status_0300 OUTPUT.
+  SET PF-STATUS 'PF300'.
+  SET TITLEBAR 'TITLE300' WITH gw_user-username.
+
+ENDMODULE.                 " STATUS_0300  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_0220  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE status_0220 OUTPUT.
+  SET PF-STATUS 'PF220'.
+*  SET TITLEBAR 'xxx'.
+
+ENDMODULE.                 " STATUS_0220  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Form  VALIDATION
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+" VALIDATION
+*&---------------------------------------------------------------------*
+*&      Module  INVISILBLE_230  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE invisilble_230 OUTPUT.
+  IF v_flag = 1.
+    LOOP AT SCREEN.
+      IF screen-group1 = 'G1'.
+        screen-active = 1.
+        screen-input = 1.
+        screen-output = 1.
+        screen-invisible = 0.
+        MODIFY SCREEN.
+      ENDIF.
+    ENDLOOP.
+
+  ELSEIF v_flag = 0.
+
+    LOOP AT SCREEN.
+      IF screen-group1 = 'G1'.
+        screen-active = 0.
+        MODIFY SCREEN.
+      ENDIF.
+    ENDLOOP.
+  ENDIF.
+
+
+ENDMODULE.                 " INVISILBLE_230  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_0230  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE status_0230 OUTPUT.
+  SET PF-STATUS 'PF230'.
+*  SET TITLEBAR 'xxx'.
+
+ENDMODULE.                 " STATUS_0230  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  INTI_250  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE inti_250 OUTPUT.
+
+*  IF Z55_PURCHASE-PURCHASEID IS NOT  INITIAL .
+*    CLEAR gt_out.
+*  ENDIF.
+
+  IF z55_purchase IS INITIAL.
+    z55_purchase-userid = 0.
+    z55_purchase-purchaseamount = '0.00'.
+  ENDIF.
+
+  LOOP AT SCREEN .
+    IF screen-group1 = 'G1'.
+      screen-input  = 0.
+      MODIFY SCREEN.
+    ENDIF.
+
+    IF flag_clr = 0.
+      CLEAR gt_out.
+      CLEAR z55_purchase-purchaseamount.
+      CLEAR z55_purchase-dateofpurchase.
+      CLEAR z55_purchase-userid.
+      MESSAGE 'THIS PURCHASE ID DOES NOT EXISTS' TYPE 'I'.
+    ENDIF.
+
+  ENDLOOP.
+
+
+
+ENDMODULE.                 " INTI_250  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_0250  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE status_0250 OUTPUT.
+  SET PF-STATUS 'PF250'.
+*  SET TITLEBAR 'xxx'.
+
+ENDMODULE.                 " STATUS_0250  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  INIT_310  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE init_310 OUTPUT.
+*  IF flag_save_dis IS NOT INITIAL.
+*    IF flag_save_dis = 1.
+*      MESSAGE 'DATA SAVED' TYPE 'I'.
+*    ENDIF.
+*    CLEAR flag_save_dis.
+*  ENDIF.
+  if gt_out is INITIAL.
+    CLEAR gw_out.
+    COUNT = 1.
+        gw_out-itemid = count.
+        gw_out-net_price = '0.00'.
+        gw_out-total = '0.00'.
+        APPEND gw_out to gt_out.
+ELSE.
+  table_control_310-lines = LIN.
+   endif.
+
+
+IF flag_pc_310 = 0.
+    LOOP AT SCREEN .
+      IF screen-group1 = 'G2'.
+        screen-active = 0.
+        MODIFY SCREEN.
+      ENDIF.
+    ENDLOOP.
+
+  ELSEIF flag_pc_310 = 1.
+    LOOP AT SCREEN .
+      IF screen-group1 = 'G2'.
+        screen-active = 1.
+        screen-invisible = 0.
+        MODIFY SCREEN.
+      ENDIF.
+    ENDLOOP.
+  ENDIF.
+ENDMODULE.                 " INIT_310  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_0310  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+module STATUS_0310 output.
+  SET PF-STATUS 'PF310'.
+*  SET TITLEBAR 'xxx'.
+
+endmodule.                 " STATUS_0310  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Form  HIDE_310
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+form HIDE_310 .
+IF FLAG_SAVE_DIS = 1.
+  LOOP AT SCREEN.
+*    IF SCREEN-NAME = 'TABLE_CONTROL_310' OR  SCREEN-NAME = 'Z55_PUR_PRO_ITEM-PR_CODE'.
+     IF SCREEN-GROUP1 = 'G3'.
+      SCREEN-input = 0.
+      MODIFY SCREEN.
+      ENDIF.
+    ENDLOOP.
+ENDIF.
+endform.                    " HIDE_310
+*&---------------------------------------------------------------------*
+*&      Module  HIDE_310  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+module HIDE_310 output.
+PERFORM HIDE_310.
+endmodule.                 " HIDE_310  OUTPUT

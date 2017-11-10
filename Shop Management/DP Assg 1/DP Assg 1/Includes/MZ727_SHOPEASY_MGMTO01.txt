@@ -1,0 +1,296 @@
+*&---------------------------------------------------------------------*
+*&  Include           MZ727_SHOPEASY_MGMTO01
+*&---------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*&      Module  INIT_100  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE init_1001 OUTPUT.
+  z681727_user-userid = 1000.
+  z681727_user-usertype = 'Admin'.
+  z681727_user-password = 'abc'.
+ENDMODULE.                 " INIT_100  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_0100  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE 0000000000status_0100 OUTPUT.
+  SET PF-STATUS 'PF100'.
+  SET TITLEBAR 'TITLE100'.
+
+ENDMODULE.                 " STATUS_0100  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_0200  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE status_0200 OUTPUT.
+  SET PF-STATUS 'PF200'.
+  SET TITLEBAR 'TITLE200' WITH gw_user-username.
+
+ENDMODULE.                 " STATUS_0200  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  M1  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE m1 OUTPUT.
+  v1 = 1.
+
+ENDMODULE.                 " M1  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  M2  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE m2 OUTPUT.
+  v1 = 1.
+ENDMODULE.                 " M2  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  INIT_0210  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE init_0210 OUTPUT.
+  IF dynnr IS INITIAL.
+    dynnr = '0211'.
+    tc-activetab = 'FC_TAB1'.
+
+  ENDIF.
+ENDMODULE.                 " INIT_0210  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_0300  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE status_0300 OUTPUT.
+  SET PF-STATUS 'PF300'.
+  SET TITLEBAR 'TITLE300' WITH gw_user-username.
+
+ENDMODULE.                 " STATUS_0300  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  DATA_FETCH_215  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE data_fetch_215 OUTPUT.
+*  if gt_user is INITIAL.
+*select * from z681727_user into table gt_user.
+*  endif.
+ENDMODULE.                 " DATA_FETCH_215  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  USER_210  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_210 OUTPUT.
+*SELECT max( userid ) from z681727_user into var1.
+*  z681727_user-userid = var1 + 1.
+*  z681727_user-usertype = 'U'.
+*  z681727_user-created_on = sy-datum.
+ENDMODULE.                 " USER_210  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  DATA_FETCH_NEW  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE data_fetch_new OUTPUT.
+  IF gt_user_mark IS INITIAL.
+    SELECT * FROM z681727_user INTO CORRESPONDING FIELDS OF TABLE gt_user_mark.
+  ENDIF.
+
+  DESCRIBE TABLE gt_user_mark LINES line.
+  table_control-lines = line.
+ENDMODULE.                 " DATA_FETCH_NEW  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  CLEAR_OK_CODE  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE clear_ok_code OUTPUT.
+  CLEAR ok_code.
+ENDMODULE.                 " CLEAR_OK_CODE  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_0220  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE status_0220 OUTPUT.
+  SET PF-STATUS 'PF220'.
+  SET TITLEBAR 'TITLE220' WITH gw_user-username.
+
+ENDMODULE.                 " STATUS_0220  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_0240  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE status_0240 OUTPUT.
+  SET PF-STATUS 'PF240'.
+  SET TITLEBAR 'TITLE240'.
+
+ENDMODULE.                 " STATUS_0240  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  DATA_FETCH_240  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE data_fetch_240 OUTPUT.
+  IF gt_card IS INITIAL.
+    SELECT * FROM z681727_card INTO TABLE gt_card_actual.
+    LOOP AT gt_card_actual INTO gw_card_actual.
+      CLEAR gw_card.
+      IF gw_card_actual-card_type = 'P'.
+        gw_card-platinum = 'X'.
+      ELSEIF gw_card_actual-card_type = 'G'.
+        gw_card-gold = 'X'.
+      ELSEIF gw_card_actual-card_type = 'S'.
+        gw_card-silver = 'X'.
+      ENDIF.
+      MOVE-CORRESPONDING gw_card_actual TO gw_card.
+      APPEND gw_card TO gt_card.
+    ENDLOOP.
+  ENDIF.
+ENDMODULE.                 " DATA_FETCH_240  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_0212  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+module STATUS_0212 output.
+  SET PF-STATUS 'PF212'.
+*  SET TITLEBAR 'xxx'.
+
+endmodule.                 " STATUS_0212  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  ADD_USER211  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+module ADD_USER211 output.
+
+SELECT MAX( USERID ) FROM Z681727_USER INTO CNT.
+
+Z681727_USER-userid = CNT + 1.
+Z681727_USER-usertype = 'U'.
+Z681727_USER-created_on = SY-DATUM.
+
+endmodule.                 " ADD_USER211  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_0210  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+module STATUS_0210 output.
+  SET PF-STATUS 'PF210'.
+*  SET TITLEBAR 'xxx'.
+
+endmodule.                 " STATUS_0210  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_0100  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+module STATUS_0100 output.
+  SET PF-STATUS 'PF100'.
+  IF OK_CODE = 'FC_CLEAR'.
+     CLEAR Z681727_USER.
+     CLEAR OK_CODE.
+  ENDIF.
+
+*  SET TITLEBAR 'xxx'.
+
+endmodule.                 " STATUS_0100  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  USER_DET_212  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+module USER_DET_212 output.
+z681727_user-created_on = sy-datum.
+endmodule.                 " USER_DET_212  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  UID_LOCK212  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+module UID_LOCK212 output.
+
+if flag_uid = 1.
+  loop at screen .
+    IF screen-name = 'Z681727_USER_DET-USERID'.
+      SCREEN-INPUT = 0.
+      MODIFY SCREEN.
+      EXIT.
+      ENDIF.
+    ENDLOOP.
+  endif.
+endmodule.                 " UID_LOCK212  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  CLEAR_212  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+module CLEAR_212 output.
+IF OK_CODE = 'FC_TAB2'.
+  CLEAR Z681727_USER_DET.
+ ENDIF.
+endmodule.                 " CLEAR_212  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  CLEAR_211  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+module CLEAR_211 output.
+IF OK_CODE = 'FC_TAB1'.
+    CLEAR Z681727_USER.
+ ENDIF.
+
+endmodule.                 " CLEAR_211  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  DATA_FETCH_213  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+module DATA_FETCH_213 output.
+IF GT_USER IS INITIAL.
+  SELECT * FROM Z681727_USER INTO TABLE GT_USER.
+  ENDIF.
+endmodule.                 " DATA_FETCH_213  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  MOD_USER_213  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+module MOD_USER_213 input.
+MODIFY GT_USER FROM Z681727_USER INDEX TABLE_CONTROL_U-current_line.
+endmodule.                 " MOD_USER_213  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  INIT_LIST_1001  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+module INIT_LIST_1001 output.
+  GW_VRM-key = 'A'.
+  GW_VRM-TEXT = 'ADMIN'.
+  APPEND gw_vrm TO gt_vRM.
+
+  GW_VRM-key = 'U'.
+  GW_VRM-TEXT = 'USER'.
+  APPEND gw_vrm TO gt_vRM.
+
+CALL FUNCTION 'VRM_SET_VALUES'
+  EXPORTING
+    id                    = 'Z681727_USER-USERTYPE'
+    values                =  GT_VRM
+* EXCEPTIONS
+*   ID_ILLEGAL_NAME       = 1
+*   OTHERS                = 2
+          .
+IF sy-subrc <> 0.
+* Implement suitable error handling here
+ENDIF.
+
+endmodule.                 " INIT_LIST_1001  OUTPUT

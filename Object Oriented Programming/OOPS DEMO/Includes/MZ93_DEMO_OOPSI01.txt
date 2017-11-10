@@ -1,0 +1,29 @@
+*&---------------------------------------------------------------------*
+*&  Include           MZ93_DEMO_OOPSI01
+*&---------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0100  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+module USER_COMMAND_0100 input.
+  IF OK_CODE = 'FC_DETAILS'.
+    SELECT SINGLE * FROM Z681797_USER INTO Z681797_USER
+      WHERE USERID = Z681797_USER-USERID.
+    IF SY-SUBRC <> 0.
+      MESSAGE 'DATA NOT FOUND' TYPE 'E'.
+    ENDIF.
+  ENDIF.
+
+  IF SY-TCODE = 'Z93_CREATE' AND OK_CODE = 'FC_SAVE'.
+    CALL METHOD OBJ->SET
+      EXPORTING
+        SET_USER = Z681797_USER.
+    CALL METHOD OBJ->SAVE.
+  ELSEIF SY-TCODE = 'Z93_CHANGE' AND OK_CODE = 'FC_SAVE'.
+    CALL METHOD OBJ_MODIFY->SET
+      EXPORTING
+        SET_USER = Z681797_USER.
+    CALL METHOD OBJ_MODIFY->SAVE.
+  ENDIF.
+endmodule.                 " USER_COMMAND_0100  INPUT

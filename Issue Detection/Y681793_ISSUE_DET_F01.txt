@@ -1,0 +1,441 @@
+*&---------------------------------------------------------------------*
+*&  Include           Y681793_ISSUE_DET_F01
+*&---------------------------------------------------------------------*
+
+*&---------------------------------------------------------------------*
+*&      Form  INIT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM init.
+  CALL SELECTION-SCREEN 0101.
+ENDFORM.                    " INIT
+*&---------------------------------------------------------------------*
+*&      Form  SELECT_SCR
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+*FORM select_scr .
+*  IF rb_list = 'X'.
+*    choice = 'L'.
+*  ELSE.
+*    choice = 'G'.
+*  ENDIF.
+*ENDFORM.                    " SELECT_SCR
+
+*&---------------------------------------------------------------------*
+*&      Form  validate_pid
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+FORM validate_bid.
+  SELECT COUNT(*) FROM y681793_book_iss INTO v_count WHERE
+    book_id IN so_bid.
+  IF v_count = 0.
+*    MESSAGE 'Purchaseid Does Not Exist.' TYPE 'E'.
+    MESSAGE e001(z681793_msg_class1).
+  ENDIF.
+ENDFORM.                    " VALIDATE_UID
+
+*&---------------------------------------------------------------------*
+*&      Form  validate_pcode
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+"validate_pid
+
+*&---------------------------------------------------------------------*
+*&      Form  DATA_FETCH
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM data_fetch .
+  "loop for reading each value from internal table into work area
+  SELECT * FROM y681793_book_iss INTO TABLE gt_iss
+    WHERE book_id IN so_bid AND issue_date IN so_date.
+  IF sy-subrc = 0.
+    SELECT * FROM y681793_book_det INTO TABLE gt_det
+      FOR ALL ENTRIES IN gt_iss WHERE book_id = gt_iss-book_id.
+    IF sy-subrc <> 0.
+      MESSAGE 'Data Not Found in Issue table' TYPE 'E'.
+    ENDIF.
+  ENDIF.
+ENDFORM.                    " DATA_FETCH
+
+*&---------------------------------------------------------------------*
+*&      Form  DATA_DISPLAY
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+*FORM data_display.
+*  LOOP AT gt_output INTO gw_output.
+*    AT NEW userid.
+*      WRITE: 'User id: ',gw_output-userid.
+*      SKIP.
+*      ULINE AT (92).
+*      WRITE :/ '|',3 'Purchase ID',15 '|',17 'Itemno', 25 '|',27
+*'Product Code',39 '|',41 'Date of Purchase',58 '|',60 'Quantity',70
+*'|', 72 'Price',79 '|', 81 'Net Price', 92 '|'.
+*      ULINE AT (92).
+*    ENDAT.
+*
+*    WRITE:/ '|',3 gw_output-purchaseid,15 '|',17 gw_output-itemno,25
+*'|',27 gw_output-pr_code HOTSPOT,39 '|',41 gw_output-dateofpurchase,58
+*'|',60 gw_output-quantity,70 '|',72 gw_output-price,79 '|',81
+*gw_output-netprice, 92 '|'.
+*    HIDE: gw_output-pr_code,gw_output-dateofpurchase.
+*    ULINE AT (92).
+*    AT END OF userid.
+*      SUM.
+*      WRITE:/70 'Total = ',gw_output-netprice.
+*    ENDAT.
+*  ENDLOOP.
+*ENDFORM.                    " DATA_DISPLAY
+*&---------------------------------------------------------------------*
+*&      Form  DATA_PROCESS
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM data_process .
+  "This statement will read value from internal
+  "table with a condition, here comparing the key
+  LOOP AT gt_det INTO gw_det.
+    IF sy-subrc = 0.
+      READ TABLE gt_iss INTO gw_iss WITH KEY book_id = gw_det-book_id.
+      IF sy-subrc = 0.
+*This statement will move the corresponding data fields
+*from one work area to other work area
+
+        MOVE-CORRESPONDING gw_det TO gw_output.
+        MOVE-CORRESPONDING gw_iss TO gw_output.
+        SELECT COUNT(*) FROM y681793_book_iss INTO
+gw_output-no_of_times WHERE book_id = gw_det-book_id.
+        APPEND gw_output TO gt_output.
+      ENDIF.
+    ENDIF.
+  ENDLOOP.
+ENDFORM.                    " DATA_PROCESS
+
+
+
+
+*&---------------------------------------------------------------------*
+*&      Form  hier-display
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+FORM fill_events.
+  CALL FUNCTION 'REUSE_ALV_EVENTS_GET'
+   EXPORTING
+     i_list_type           = 0
+   IMPORTING
+     et_events             = gt_events
+*   EXCEPTIONS
+*     LIST_TYPE_WRONG       = 1
+*     OTHERS                = 2
+            .
+  IF sy-subrc <> 0.
+* Implement suitable error handling here
+  ENDIF.
+
+  READ TABLE gt_events INTO gw_events WITH KEY name = 'TOP_OF_PAGE'.
+  gw_events-form = 'FORM_PAGE'.
+  MODIFY gt_events FROM gw_events INDEX sy-tabix.
+
+  READ TABLE gt_events INTO gw_events WITH KEY name = 'TOP_OF_LIST'.
+  gw_events-form = 'FORM_LIST'.
+  MODIFY gt_events FROM gw_events INDEX sy-tabix.
+
+  READ TABLE gt_events INTO gw_events WITH KEY name = 'END_OF_LIST'.
+  gw_events-form = 'FORM_LIST_END'.
+  MODIFY gt_events FROM gw_events INDEX sy-tabix.
+
+ENDFORM.                    " HIER-DISPLAY
+
+*&---------------------------------------------------------------------*
+*&      Form  form_page
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+FORM form_page.
+  gw_header-typ = 'S'.
+  gw_header-info = sy-datum.
+  gw_header-key = 'Date: '.
+  APPEND gw_header TO gt_header.
+  CLEAR gw_header.
+
+  CALL FUNCTION 'REUSE_ALV_COMMENTARY_WRITE'
+    EXPORTING
+      it_list_commentary = gt_header
+*     I_LOGO             =
+*     I_END_OF_LIST_GRID =
+*     I_ALV_FORM         =
+    .
+  CLEAR gt_header.
+ENDFORM.                    "form_page
+*&---------------------------------------------------------------------*
+*&      Form  form_list
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+FORM form_list.
+
+  write:/23 'DETAILS OF BOOKS ISSUED' color 6.
+*  gw_header-typ = 'H'.
+*  gw_header-info+23 = 'DETAILS OF BOOKS ISSUED'.
+*  APPEND gw_header TO gt_header.
+*  CLEAR gw_header.
+*  CALL FUNCTION 'REUSE_ALV_COMMENTARY_WRITE'
+*    EXPORTING
+*      it_list_commentary = gt_header
+**     I_LOGO             =
+**     I_END_OF_LIST_GRID =
+**     I_ALV_FORM         =
+*    .
+
+  CLEAR gt_header.
+ENDFORM.                    "form_list
+
+*&---------------------------------------------------------------------*
+*&      Form  form_list_end
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+FORM form_list_end.
+  write:/23 'Enjoy Reading!!!' color 3.
+*  gw_header-typ = 'H'.
+*  gw_header-info+23 = 'Enjoy Reading!!!'.
+*  APPEND gw_header TO gt_header.
+*  CLEAR gw_header.
+*  CALL FUNCTION 'REUSE_ALV_COMMENTARY_WRITE'
+*    EXPORTING
+*      it_list_commentary = gt_header
+**     I_LOGO             =
+**     I_END_OF_LIST_GRID =
+**     I_ALV_FORM         =
+*    .
+
+  CLEAR gt_header.
+ENDFORM.                    "form_list_end
+*&---------------------------------------------------------------------*
+*&      Form  LIST-DISPLAY
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM list_display.
+  CALL FUNCTION 'REUSE_ALV_LIST_DISPLAY'
+   EXPORTING
+*     I_INTERFACE_CHECK              = ' '
+*     I_BYPASSING_BUFFER             =
+*     I_BUFFER_ACTIVE                = ' '
+     i_callback_program             = 'Y681793_ISSUE_DET'
+*     I_CALLBACK_PF_STATUS_SET       = ' '
+     i_callback_user_command        = 'USER_COMMAND'
+*     I_STRUCTURE_NAME               =
+     is_layout                      = gw_layout
+     it_fieldcat                    = gt_fcat
+*     IT_EXCLUDING                   =
+*     IT_SPECIAL_GROUPS              =
+     it_sort                        = gt_sort
+*     IT_FILTER                      =
+*     IS_SEL_HIDE                    =
+*     I_DEFAULT                      = 'X'
+*     I_SAVE                         = ' '
+*     IS_VARIANT                     =
+     it_events                      = gt_events
+*     IT_EVENT_EXIT                  =
+*     IS_PRINT                       =
+*     IS_REPREP_ID                   =
+*     I_SCREEN_START_COLUMN          = 0
+*     I_SCREEN_START_LINE            = 0
+*     I_SCREEN_END_COLUMN            = 0
+*     I_SCREEN_END_LINE              = 0
+*     IR_SALV_LIST_ADAPTER           =
+*     IT_EXCEPT_QINFO                =
+*     I_SUPPRESS_EMPTY_DATA          = ABAP_FALSE
+*   IMPORTING
+*     E_EXIT_CAUSED_BY_CALLER        =
+*     ES_EXIT_CAUSED_BY_USER         =
+    TABLES
+      t_outtab                       = gt_output
+*   EXCEPTIONS
+*     PROGRAM_ERROR                  = 1
+*     OTHERS                         = 2
+            .
+  IF sy-subrc <> 0.
+* Implement suitable error handling here
+  ENDIF.
+
+ENDFORM.                    " LIST-DISPLAY
+*&---------------------------------------------------------------------*
+*&      Form  FILL_FCAT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM fill_fcat.
+
+  gw_fcat-fieldname = 'BOOK_ID'.
+  gw_fcat-tabname = 'GT_OUTPUT'.
+  gw_fcat-outputlen = 15.
+  gw_fcat-seltext_s = 'BID'.
+  gw_fcat-seltext_m = 'BOOK ID'.
+  gw_fcat-key = 'X'.
+  gw_fcat-hotspot = 'X'.
+*  gw_fcat-col_pos = 1.
+
+  APPEND gw_fcat TO gt_fcat.
+  CLEAR gw_fcat.
+
+  gw_fcat-fieldname = 'BOOK_NAME'.
+*  gw_fcat-col_pos = 2.
+  gw_fcat-tabname = 'GT_OUTPUT'.
+  gw_fcat-outputlen = 20.
+  gw_fcat-seltext_s = 'BOOK NAME'.
+*  gw_fcat-seltext_m = ''.
+*  gw_fcat-hotspot = 'X'.
+
+  APPEND gw_fcat TO gt_fcat.
+  CLEAR gw_fcat.
+
+  gw_fcat-fieldname = 'AUTHOR_NAME'.
+*   gw_fcat-col_pos = 1.
+  gw_fcat-tabname = 'GT_OUTPUT'.
+*  gw_fcat-ref_tabname = 'Z681797_USER_DETAILS'.
+*  gw_fcat-ref_fieldname = 'EMAILID'.
+  gw_fcat-outputlen = 20.
+*  gw_fcat-seltext_s = 'PCODE'.
+  gw_fcat-seltext_m = 'AUTHOR NAME'.
+*  gw_fcat-hotspot = 'X'.
+  APPEND gw_fcat TO gt_fcat.
+  CLEAR gw_fcat.
+
+  gw_fcat-fieldname = 'NO_OF_TIMES'.
+  gw_fcat-tabname = 'GT_OUTPUT'.
+*  gw_fcat-col_pos = 1.
+*  gw_fcat-ref_tabname = 'Z681797_USER_DETAILS'.
+*  gw_fcat-ref_fieldname = 'EMAILID'.
+  gw_fcat-outputlen = 20.
+  gw_fcat-seltext_l = 'No. of times Book Issued'.
+*  gw_fcat-seltext_m = 'DATE OF JOINING'.
+*  gw_fcat-emphasize = 'C611'.
+*  gw_fcat-hotspot = 'X'.
+*  gw_fcat-key = 'X'.
+  APPEND gw_fcat TO gt_fcat.
+  CLEAR gw_fcat.
+
+ENDFORM.                    " FILL_FCAT
+*&---------------------------------------------------------------------*
+*&      Form  FILL_LAYOUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM fill_layout .
+*  gw_layout-zebra = 'X'.
+*  gw_layout-confirmation_prompt = 'X'.
+*  gw_layout-colwidth_optimize = 'X'.
+*  gw_layout-cell_merge = 'X'.
+ENDFORM.                    " FILL_LAYOUT
+*&---------------------------------------------------------------------*
+*&      Form  FILL_SORT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM fill_sort.
+  gw_sort-fieldname = 'BOOK_ID'.
+  gw_sort-tabname = 'GT_OUTPUT'.
+  gw_sort-up = 'X'.
+*  gw_sort-subtot = 'X'.
+  APPEND gw_sort TO gt_sort.
+  CLEAR gw_sort.
+
+*  gw_sort-fieldname = 'ISSUE_DATE'.
+*  gw_sort-tabname = 'GT_OUTPUT'.
+*  gw_sort-up = 'X'.
+**  gw_sort-subtot = 'X'.
+*  APPEND gw_sort TO gt_sort.
+*  CLEAR gw_sort.
+ENDFORM.                    " FILL_SORT
+
+*&---------------------------------------------------------------------*
+*&      Form  user_command
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*      -->UCOMM      text
+*      -->SELFIELD   text
+*----------------------------------------------------------------------*
+FORM user_command USING ucomm TYPE sy-ucomm selfield TYPE
+slis_selfield.
+  IF selfield-fieldname = 'BOOK_ID'.
+    WRITE : 'BOOK ID :', selfield-value.
+    SKIP.
+    WRITE:/1 'ISSUED TO', 30 'ISSUE DATE', 50 'RETURNED DATE', 70
+'STATUS'.
+    LOOP AT gt_iss INTO gw_iss.
+      IF gw_iss-book_id = selfield-value..
+        WRITE:/1 gw_iss-issued_to, 30 gw_iss-issue_date.
+        IF gw_iss-returned_date <> 0.
+          WRITE: 50 gw_iss-returned_date, 70 'ON SHELF'.
+        ELSE.
+          WRITE: 50 'NOT RETURNED', 70 'ISSUED'.
+        ENDIF.
+      ENDIF.
+    ENDLOOP.
+  ENDIF.
+ENDFORM.                    "user_command
+*&---------------------------------------------------------------------*
+*&      Form  DISPLAY
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+*FORM display .
+*  IF rb_list = 'X'.
+*    PERFORM list_display.
+*  ELSE.
+*    PERFORM grid_display.
+*  ENDIF.
+*ENDFORM.                    " DISPLAY
+
+*FORM data_process.
+*  LOOP AT gt_iss INTO gw_iss.
+*    IF sy-subrc = 0.
+*      READ TABLE gt_det INTO gw_det WITH KEY book_id = gw_iss-book_id.
+*      IF sy-subrc = 0.
+*        MOVE-CORRESPONDING gw_det TO gw_output.
+*        MOVE-CORRESPONDING gw_iss TO gw_output.
+*        gw_output-no_of_times = 1.
+*        APPEND gw_output TO gt_output.
+*      ENDIF.
+*    ENDIF.
+*  ENDLOOP.
+*ENDFORM.

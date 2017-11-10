@@ -1,0 +1,36 @@
+*&---------------------------------------------------------------------*
+*& Include MZ93_DEMOTOP                                      Module Pool      SAPMZ93_DEMO
+*&
+*&---------------------------------------------------------------------*
+
+PROGRAM  sapmz93_demo.
+TABLES: z681797_user,ymb_user, ymb_user_details.
+
+DATA ok_code TYPE sy-ucomm.
+DATA v_dynnr LIKE sy-dynnr.
+
+
+CONTROLS ts TYPE TABSTRIP.
+
+CONTROLS tc TYPE TABLEVIEW USING SCREEN '0500'.
+CONTROLS tc2 TYPE TABLEVIEW USING SCREEN '0500'.
+
+DATA  gt_user TYPE STANDARD TABLE OF z681797_user.
+DATA  lin TYPE i.
+
+TYPES : BEGIN OF ls_ud,
+  mark,
+  userid  TYPE ymb_user_details-userid,
+  gender TYPE ymb_user_details-gender,
+  emailid TYPE ymb_user_details-emailid,
+  doj TYPE ymb_user_details-doj,
+  address TYPE ymb_user_details-address,
+END OF ls_ud.
+
+DATA: gt_details TYPE STANDARD TABLE OF LS_UD,
+      gw_details LIKE LINE OF gt_details.
+data  GT_PURCHASE TYPE STANDARD TABLE OF Z681797_PURCHASE.
+
+DATA V_STATUS TYPE ICON_NAME.
+DATA STATUS TYPE ICONS-TEXT.
+data  io_1(20) TYPE C.
